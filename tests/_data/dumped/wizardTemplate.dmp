@@ -1,0 +1,28 @@
+<div>
+    <ul>
+        <li class="active">1</li>
+        <li class="disabled">2</li>
+    </ul>
+
+<form action="" method="post">
+
+<table>
+<tr class="required">
+	<th><label for="frm-step1-name" class="required">Uživatelské jméno</label></th>
+
+	<td><input type="text" name="name" id="frm-step1-name" required data-nette-rules='[{"op":":filled","msg":"This field is required."}]' class="text"></td>
+</tr>
+
+<tr>
+	<th></th>
+
+	<td><input type="submit" name="next" value="Další" class="button"></td>
+</tr>
+</table>
+
+<div><!--[if IE]><input type=IEbug disabled style="display:none"><![endif]--></div>
+</form>
+
+
+
+</div>

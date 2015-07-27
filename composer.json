@@ -1,0 +1,12 @@
+{
+  "name": "webchemistry/forms-wizard",
+  "type": "library",
+  "description": "Component for WebChemistry\\Forms\\Form",
+  "keywords": ["nette", "webchemistry", "forms", "wizard"],
+  "require": {
+    "webchemistry/forms": "@dev"
+  },
+  "autoload": {
+    "classmap": ["src/"]
+  }
+}
