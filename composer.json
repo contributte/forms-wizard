@@ -4,7 +4,7 @@
   "description": "Component for WebChemistry\\Forms\\Form",
   "keywords": ["nette", "webchemistry", "forms", "wizard"],
   "require": {
-    "webchemistry/forms": "@dev"
+    "webchemistry/forms": "1.0"
   },
   "autoload": {
     "classmap": ["src/"]
