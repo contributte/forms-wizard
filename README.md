@@ -1,4 +1,4 @@
-# Rozšiření pro WebChemistry\Forms\Form
+# Rozšíření pro WebChemistry\Forms\Form
 
 ## Instalace
 
