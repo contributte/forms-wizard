@@ -4,7 +4,7 @@ namespace WebChemistry\Forms\Controls;
 
 use Nette\ComponentModel\IComponent;
 use WebChemistry\Forms\Form;
-use WebChemistry\Forms\IProvider;
+use WebChemistry\Forms\Factory\IFactory;
 
 interface IWizard {
 
@@ -15,7 +15,7 @@ interface IWizard {
 	/**
 	 * @return IWizard
 	 */
-	public function setProvider(IProvider $provider);
+	public function setFactory(IFactory $factory);
 
 	/**
 	 * @return int

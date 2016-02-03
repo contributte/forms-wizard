@@ -6,7 +6,7 @@ use Nette;
 use Nette\ComponentModel\Container;
 use Nette\Http\Session;
 use WebChemistry\Forms\Form;
-use WebChemistry\Forms\IProvider;
+use WebChemistry\Forms\Factory\IFactory;
 
 class Wizard extends Container implements IWizard {
 
@@ -19,8 +19,8 @@ class Wizard extends Container implements IWizard {
 	/** @var array */
 	public $onSuccess = array();
 
-	/** @var IProvider */
-	private $provider;
+	/** @var IFactory */
+	private $factory;
 
 	/** @var bool */
 	private $isSuccess = FALSE;
@@ -31,8 +31,8 @@ class Wizard extends Container implements IWizard {
 		$this->monitor('Nette\Application\IPresenter');
 	}
 
-	public function setProvider(IProvider $provider) {
-		$this->provider = $provider;
+	public function setFactory(IFactory $provider) {
+		$this->factory = $provider;
 
 		return $this;
 	}
@@ -101,8 +101,8 @@ class Wizard extends Container implements IWizard {
 	 * @return Form
 	 */
 	protected function getForm() {
-		if ($this->provider) {
-			$form = $this->provider->create();
+		if ($this->factory) {
+			$form = $this->factory->create();
 		} else {
 			$form = new Form;
 		}
@@ -178,7 +178,7 @@ class Wizard extends Container implements IWizard {
 	}
 
 	/**
-	 * Component factory. Delegates the creation of components to a createComponent<Name> method.
+	 * Control factory. Delegates the creation of components to a createComponent<Name> method.
 	 * @param  string      component name
 	 * @return Form  the created component (optionally)
 	 */
