@@ -118,4 +118,5 @@ class Facade extends Nette\Object {
 	public function isDisabled($step) {
 		return $step > $this->getLastStep();
 	}
+
 }

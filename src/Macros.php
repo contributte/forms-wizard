@@ -7,7 +7,6 @@ use Latte\Engine;
 use Latte\Macros\MacroSet;
 use Latte\MacroNode;
 use Latte\PhpWriter;
-use Nette\Bridges\ApplicationLatte\UIMacros;
 use Nette\Utils\Strings;
 
 class Macros extends MacroSet {
@@ -52,4 +51,5 @@ class Macros extends MacroSet {
 	}
 
 	public function wizardEnd() {}
+
 }

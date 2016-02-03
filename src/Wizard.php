@@ -17,7 +17,7 @@ class Wizard extends Container implements IWizard {
 	protected $expiration = '+ 20 minutes';
 
 	/** @var array */
-	public $onSuccess = array();
+	public $onSuccess = [];
 
 	/** @var IFactory */
 	private $factory;
@@ -25,12 +25,19 @@ class Wizard extends Container implements IWizard {
 	/** @var bool */
 	private $isSuccess = FALSE;
 
+	/**
+	 * @param Session $session
+	 */
 	public function __construct(Session $session) {
 		$this->session = $session;
 
 		$this->monitor('Nette\Application\IPresenter');
 	}
 
+	/**
+	 * @param IFactory $provider
+	 * @return self
+	 */
 	public function setFactory(IFactory $provider) {
 		$this->factory = $provider;
 
@@ -88,9 +95,7 @@ class Wizard extends Container implements IWizard {
 	 * @return Wizard
 	 */
 	public function setStep($step) {
-		$lastStep = $this->getSection()->lastStep ? : 1;
-
-		if ($lastStep >= $step && $step > 0 && $this->getComponent($step, FALSE)) {
+		if ($this->getLastStep() >= $step && $step > 0 && $this->getComponent($step, FALSE)) {
 			$this->getSection()->currentStep = $step;
 		}
 
@@ -106,8 +111,7 @@ class Wizard extends Container implements IWizard {
 		} else {
 			$form = new Form;
 		}
-
-		$form->onSubmit[] = array($this, 'submitStep');
+		$form->onSubmit[] = [$this, 'submitStep'];
 
 		return $form;
 	}
@@ -120,33 +124,17 @@ class Wizard extends Container implements IWizard {
 
 		if ($submitName === self::PREV_SUBMIT_NAME) {
 			$currentStep = $this->getCurrentStep();
-
 			$this->getSection()->currentStep = $currentStep - 1;
-		} else if ($submitName === self::NEXT_SUBMIT_NAME) {
-			if ($form->isValid()) {
-				$this->getSection()->values = array_merge((array) $this->getSection()->values, $form->getValues(TRUE));
-
-				$currentStep = $this->getCurrentStep();
-
-				$this->getSection()->lastStep = $this->getSection()->currentStep = $currentStep + 1;
-			}
-		} else if ($submitName === self::FINISH_SUBMIT_NAME) {
-			if (!$form->isValid()) {
-				return;
-			}
-
-			if ($this->getSection()->values === NULL) {
-				return;
-			}
-
+		} else if ($submitName === self::NEXT_SUBMIT_NAME && $form->isValid()) {
+			$this->getSection()->values = array_merge((array) $this->getSection()->values, $form->getValues(TRUE));
+			$currentStep = $this->getCurrentStep();
+			$this->getSection()->lastStep = $this->getSection()->currentStep = $currentStep + 1;
+		} else if ($submitName === self::FINISH_SUBMIT_NAME && $form->isValid() && $this->getSection()->values !== NULL) {
 			$this->getSection()->values = array_merge((array) $this->getSection()->values, $form->getValues(TRUE));
 
 			$this->isSuccess = TRUE;
-
 			$this->finish();
-
 			$this->onSuccess($this);
-
 			$this->resetSection();
 		}
 	}
@@ -194,4 +182,5 @@ class Wizard extends Container implements IWizard {
 			return $component;
 		}
 	}
+
 }

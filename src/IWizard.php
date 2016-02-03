@@ -57,4 +57,5 @@ interface IWizard {
 	 * @return boolean
 	 */
 	public function isSuccess();
+
 }
