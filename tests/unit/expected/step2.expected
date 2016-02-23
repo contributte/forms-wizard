@@ -17,7 +17,7 @@
 <tr>
 	<th></th>
 
-	<td><input type="submit" name="prev" data-novalidate="" value="Zpět" class="button"> <input type="submit" name="finish" value="Registrovat" class="button"></td>
+	<td><input type="submit" name="prev" value="Zpět" formnovalidate class="button"> <input type="submit" name="finish" value="Registrovat" class="button"></td>
 </tr>
 </table>
 

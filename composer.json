@@ -1,10 +1,17 @@
 {
   "name": "webchemistry/forms-wizard",
   "type": "library",
-  "description": "Component for WebChemistry\\Forms\\Form",
+  "description": "Wizard component for nette/forms",
   "keywords": ["nette", "webchemistry", "forms", "wizard"],
   "require": {
-    "webchemistry/forms": "~1.0@dev"
+    "nette/forms": "^2.3",
+    "nette/http": "^2.3"
+  },
+  "require-dev": {
+    "latte/latte": "^2.3",
+    "codeception/codeception": "^2.1",
+    "nette/application": "^2.3",
+    "kdyby/fake-session": "^2.0"
   },
   "autoload": {
     "classmap": ["src/"]

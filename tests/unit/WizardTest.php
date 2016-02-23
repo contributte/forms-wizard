@@ -1,22 +1,34 @@
 <?php
 
-class WizardTest extends \PHPUnit_Framework_TestCase {
+class WizardTest extends \Codeception\TestCase\Test {
 
-	/** @var bool */
-	private static $isCalled = FALSE;
+	/**
+	 * @var \UnitTester
+	 */
+	protected $tester;
 
-	protected function setUp() {
+	/** @var \WebChemistry\Forms\Controls\Wizard */
+	protected $wizard;
 
+	/** @var \Nette\Http\Session */
+	private $session;
+
+	protected function _before() {
+		$this->session = new \Nette\Http\Session(
+			new \Nette\Http\Request(new \Nette\Http\UrlScript()), new \Nette\Http\Response()
+		);
+		$this->session = new \Kdyby\FakeSession\Session($this->session);
+		$this->session->start();
+
+		$this->wizard = new Wizard($this->session);
 	}
 
-	protected function tearDown() {
-
+	protected function _after() {
 	}
 
 	public function testSteps() {
-		$wizard = new Wizard(E::getByType('Nette\Http\Session'));
-
-		$form = $wizard->create();
+		$wizard = $this->wizard;
+		$form = $this->wizard->create();
 
 		$this->assertInstanceOf('Nette\Forms\Form', $form);
 		$this->assertSame('step1', $form->getName());
@@ -31,184 +43,159 @@ class WizardTest extends \PHPUnit_Framework_TestCase {
 		$this->assertSame(1, $wizard->getCurrentStep());
 	}
 
-	public function testMacros() {
-		$wizard = new Wizard(E::getByType('Nette\Http\Session'));
-
-		$template = E::getByType('Nette\Application\UI\ITemplateFactory')->createTemplate();
-
-		\WebChemistry\Forms\Controls\Wizard\Macros::install($template->getLatte());
-
-		$template->wzd = $wizard;
-
-		$template->setFile(E::directory('%data%/wizard/template.latte'));
-
-		$this->assertStringEqualsFile(E::dumpedFile('wizardTemplate'), (string) $template);
-	}
-
 	public function testInvalidSubmit() {
-		/** @var \Nette\Application\IPresenterFactory $presenterFactory */
-		$presenterFactory = E::getByType('Nette\Application\IPresenterFactory');
+		$response = NULL;
+		$wizard = $this->sendRequestToPresenter('wizard', 'step1', array(
+			\Wizard::NEXT_SUBMIT_NAME => 'submit'
+		), $response);
 
-		$presenter = $presenterFactory->createPresenter('Wizard');
-		$presenter->autoCanonicalize = FALSE;
-
-		$presenter->run(new \Nette\Application\Request('Wizard', 'POST', array(
-			'do' => 'wizard-step1-submit'
-		), array(
-			''
-		)));
-
-		/** @var \Wizard $wizard */
-		$wizard = $presenter['wizard'];
-
+		$this->assertStringEqualsFile(__DIR__ . '/expected/start.expected', $response);
 		$this->assertSame(1, $wizard->getCurrentStep());
+		$this->assertSame(0, Wizard::$called);
 		$this->assertSame($wizard->create(1), $wizard->create());
 		$this->assertSame(1, $wizard->getLastStep());
 	}
 
 	public function testSubmit() {
-		/** @var \Nette\Application\IPresenterFactory $presenterFactory */
-		$presenterFactory = E::getByType('Nette\Application\IPresenterFactory');
-
-		$presenter = $presenterFactory->createPresenter('Wizard');
-		$presenter->autoCanonicalize = FALSE;
-
-		$presenter->run(new \Nette\Application\Request('Wizard', 'POST', array(
-			'do' => 'wizard-step1-submit'
-		), array(
+		$response = NULL;
+		$wizard = $this->sendRequestToPresenter('wizard', 'step1', array(
 			'name' => 'Name',
-			\Wizard::NEXT_SUBMIT_NAME => ''
-		)));
+			\Wizard::NEXT_SUBMIT_NAME => 'submit'
+		), $response);
 
-		/** @var \Wizard $wizard */
-		$wizard = $presenter['wizard'];
-
+		$this->assertStringEqualsFile(__DIR__ . '/expected/step2.expected', $response);
+		$this->assertFalse($wizard->isSuccess());
 		$this->assertSame(2, $wizard->getCurrentStep());
 		$this->assertSame($wizard->create(2), $wizard->create());
 		$this->assertSame(2, $wizard->getLastStep());
+		$this->assertSame(0, Wizard::$called);
 		$this->assertSame(array(
 			'name' => 'Name'
 		), $wizard->getValues(TRUE));
 	}
 
 	public function testSubmitBack() {
-		/** @var \Nette\Application\IPresenterFactory $presenterFactory */
-		$presenterFactory = E::getByType('Nette\Application\IPresenterFactory');
-
-		$presenter = $presenterFactory->createPresenter('Wizard');
-		$presenter->autoCanonicalize = FALSE;
-
-		$presenter->run(new \Nette\Application\Request('Wizard', 'POST', array(
-			'do' => 'wizard-step1-submit'
-		), array(
+		$response = NULL;
+		$wizard = $this->sendRequestToPresenter('wizard', 'step1', array(
 			'name' => 'Name',
-			\Wizard::NEXT_SUBMIT_NAME => ''
-		)));
+			\Wizard::NEXT_SUBMIT_NAME => 'submit'
+		), $response);
 
-		/** @var \Wizard $wizard */
-		$wizard = $presenter['wizard'];
-
+		$this->assertStringEqualsFile(__DIR__ . '/expected/step2.expected', $response);
 		$this->assertSame(2, $wizard->getCurrentStep());
 		$this->assertSame($wizard->create(2), $wizard->create());
 		$this->assertSame(2, $wizard->getLastStep());
 
 		// Back
+		$wizard = $this->sendRequestToPresenter('wizard', 'step2', array(
+			\Wizard::PREV_SUBMIT_NAME => 'submit'
+		), $response);
 
-		$presenter = $presenterFactory->createPresenter('Wizard');
-		$presenter->autoCanonicalize = FALSE;
-
-		/** @var \Wizard $wizard */
-		$wizard = $presenter['wizard'];
-
-		$this->assertSame(2, $wizard->getCurrentStep());
-
-		$presenter->run(new \Nette\Application\Request('Wizard', 'POST', array(
-			'do' => 'wizard-step2-submit'
-		), array(
-			\Wizard::PREV_SUBMIT_NAME => ''
-		)));
-
-		/** @var \Wizard $wizard */
-		$wizard = $presenter['wizard'];
+		$this->assertFalse($wizard->isSuccess());
 		$this->assertSame(1, $wizard->getCurrentStep());
 		$this->assertSame(2, $wizard->getLastStep());
+		$this->assertSame(0, Wizard::$called);
 		$this->assertSame(array(
 			'name' => 'Name'
 		), $wizard->getValues(TRUE));
 	}
 
-	public function testEndAndTemplates() {
-		/** @var \Nette\Application\IPresenterFactory $presenterFactory */
-		$presenterFactory = E::getByType('Nette\Application\IPresenterFactory');
-
-		$presenter = $presenterFactory->createPresenter('Wizard');
-		$presenter->autoCanonicalize = FALSE;
-
-		$response = $presenter->run(new \Nette\Application\Request('Wizard'));
-
-		$this->assertStringEqualsFile(E::dumpedFile('step1'), (string) $response->getSource());
-
-		/** @var \Nette\Application\IPresenterFactory $presenterFactory */
-		$presenterFactory = E::getByType('Nette\Application\IPresenterFactory');
-
-		$presenter = $presenterFactory->createPresenter('Wizard');
-		$presenter->autoCanonicalize = FALSE;
-
-		$response = $presenter->run(new \Nette\Application\Request('Wizard', 'POST', array(
-			'do' => 'wizard-step1-submit'
-		), array(
+	public function testFinish() {
+		$response = NULL;
+		$wizard = $this->sendRequestToPresenter('wizard', 'step1', array(
 			'name' => 'Name',
-			\Wizard::NEXT_SUBMIT_NAME => ''
-		)));
+			\Wizard::NEXT_SUBMIT_NAME => 'submit'
+		), $response);
 
-		$this->assertStringEqualsFile(E::dumpedFile('step2'), (string) $response->getSource());
-
-		/** @var \Wizard $wizard */
-		$wizard = $presenter['wizard'];
-
+		$this->assertStringEqualsFile(__DIR__ . '/expected/step2.expected', $response);
+		$this->assertFalse($wizard->isSuccess());
+		$this->assertSame(0, Wizard::$called);
 		$this->assertSame(2, $wizard->getCurrentStep());
 		$this->assertSame($wizard->create(2), $wizard->create());
 		$this->assertSame(2, $wizard->getLastStep());
 
 		// Second
+		$wizard = $this->sendRequestToPresenter('wizard', 'step2', array(
+			'void' => 'void',
+			'email' => 'email',
+			\Wizard::FINISH_SUBMIT_NAME => 'submit'
+		), $response);
 
-		/** @var \Nette\Application\IPresenterFactory $presenterFactory */
-		$presenterFactory = E::getByType('Nette\Application\IPresenterFactory');
-
-		$presenter = $presenterFactory->createPresenter('Wizard');
-		$presenter->autoCanonicalize = FALSE;
-
-		$presenter['wizard']->onSuccess[] = array($this, 'wizardSuccess');
-
-		$response = $presenter->run(new \Nette\Application\Request('Wizard', 'POST', array(
-			'do' => 'wizard-step2-submit'
-		), array(
-			'name' => 'Name',
-			'email' => 'Email',
-			\Wizard::FINISH_SUBMIT_NAME => ''
-		)));
-
-		$this->assertStringEqualsFile(E::dumpedFile('successStep'), (string) $response->getSource());
-
-		/** @var \Wizard $wizard */
-		$wizard = $presenter['wizard'];
-
+		$this->assertStringEqualsFile(__DIR__ . '/expected/finish.expected', $response);
 		$this->assertTrue($wizard->isSuccess());
-		$this->assertTrue(self::$isCalled);
+		$this->assertSame(1, Wizard::$called);
 		$this->assertSame(array(), $wizard->getValues(TRUE));
+		$this->assertSame(array(
+			'name' => 'Name',
+			'email' => 'email'
+		), Wizard::$values);
 		$this->assertSame(1, $wizard->getCurrentStep());
 		$this->assertSame(1, $wizard->getLastStep());
 	}
 
-	public function wizardSuccess(\Wizard $wizard) {
-		$this->assertSame(array(
+	public function testFacade() {
+		$facade = new \WebChemistry\Forms\Controls\Wizard\Facade($this->wizard);
+		$this->assertTrue($facade->isDisabled(2));
+
+		$wizard = $this->sendRequestToPresenter('wizard', 'step1', array(
 			'name' => 'Name',
-			'email' => 'Email'
-		), $wizard->getValues(TRUE));
+			\Wizard::NEXT_SUBMIT_NAME => 'submit'
+		));
 
-		$this->assertSame(2, $wizard->getCurrentStep());
-		$this->assertSame(2, $wizard->getLastStep());
+		$facade = new \WebChemistry\Forms\Controls\Wizard\Facade($wizard);
 
-		self::$isCalled = TRUE;
+		$this->assertSame(2, $facade->getCurrentStep());
+		$this->assertInstanceOf('Nette\Forms\Form', $facade->getCurrentComponent());
+		$this->assertSame('step2', $facade->getCurrentComponent()->getName());
+		$this->assertNotNull($facade->getCurrentComponent()->lookup('Nette\Application\IPresenter', FALSE));
+		$this->assertTrue($facade->useLink(1));
+		$this->assertFalse($facade->useLink(2));
+		$this->assertTrue($facade->isCurrent(2));
+		$this->assertFalse($facade->isCurrent(1));
+		$this->assertFalse($facade->isSuccess());
+		$this->assertSame(2, $facade->getTotalSteps());
+		$this->assertSame([
+			1, 2
+		], $facade->getSteps());
+		$this->assertSame(2, $facade->getLastStep());
+		$this->assertFalse($facade->isActive(1));
+		$this->assertTrue($facade->isActive(2));
+		$this->assertFalse($facade->isDisabled(2));
+		$this->assertFalse($facade->isDisabled(1));
 	}
+
+	/************************* Helpers **************************/
+
+	/**
+	 * @param string $name
+	 * @return \Nette\Application\UI\Presenter
+	 */
+	protected function createPresenter($name) {
+		$presenterFactory = new \Nette\Application\PresenterFactory(function ($class) {
+			/** @var \Nette\Application\UI\Presenter $presenter */
+			$presenter = new $class($this->session);
+			$presenter->injectPrimary(NULL, NULL, NULL,
+				new \Nette\Http\Request(new \Nette\Http\UrlScript()), new \Nette\Http\Response(), NULL, NULL,
+				new \Nette\Bridges\ApplicationLatte\TemplateFactory(new MockLatteFactory()));
+			$presenter->autoCanonicalize = FALSE;
+
+			return $presenter;
+		});
+
+		return $presenterFactory->createPresenter($name);
+	}
+
+	protected function sendRequestToPresenter($controlName = 'wizard', $step = 'step1', $post = [], &$response = NULL) {
+		$presenter = $this->createPresenter('Wizard');
+
+		$response = (string) $presenter->run(new \Nette\Application\Request('Wizard', 'POST', [
+			'do' => $controlName . '-' . $step . '-submit'
+		], $post))->getSource();
+
+		/** @var WebChemistry\Forms\Controls\Wizard $form */
+		$form = $presenter[$controlName];
+
+		return $form;
+	}
+
 }

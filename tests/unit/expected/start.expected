@@ -10,7 +10,12 @@
 <tr class="required">
 	<th><label for="frm-wizard-step1-name" class="required">Uživatelské jméno</label></th>
 
-	<td><input type="text" name="name" id="frm-wizard-step1-name" required data-nette-rules='[{"op":":filled","msg":"This field is required."}]' class="text"></td>
+	<td><input type="text" name="name" id="frm-wizard-step1-name" required data-nette-rules='[{"op":":filled","msg":"This field is required."}]' class="text">
+
+	<span class="error">
+		This field is required.
+	</span>
+</td>
 </tr>
 
 <tr>

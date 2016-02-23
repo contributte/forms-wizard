@@ -1,9 +1,0 @@
-services:
-    - App\Presenters\WizardPresenter
-
-application:
-    mapping:
-        *: App\*Module\Presenters\*Presenter
-
-extensions:
-    - WebChemistry\Forms\Controls\DI\WizardExtension

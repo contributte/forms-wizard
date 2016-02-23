@@ -2,11 +2,15 @@
 
 namespace WebChemistry\Forms\Controls;
 
-use Nette;
 use Nette\ComponentModel\Container;
+use Nette\Forms\Controls\SubmitButton;
 use Nette\Http\Session;
-use WebChemistry\Forms\Form;
+use Nette\Application\UI\Form;
+use Nette\Http\SessionSection;
+use Nette\UnexpectedValueException;
+use Nette\Utils\ArrayHash;
 use WebChemistry\Forms\Factory\IFactory;
+use Nette\Forms;
 
 class Wizard extends Container implements IWizard {
 
@@ -17,7 +21,7 @@ class Wizard extends Container implements IWizard {
 	protected $expiration = '+ 20 minutes';
 
 	/** @var array */
-	public $onSuccess = [];
+	public $onSuccess = array();
 
 	/** @var IFactory */
 	private $factory;
@@ -30,16 +34,14 @@ class Wizard extends Container implements IWizard {
 	 */
 	public function __construct(Session $session) {
 		$this->session = $session;
-
-		$this->monitor('Nette\Application\IPresenter');
 	}
 
 	/**
-	 * @param IFactory $provider
+	 * @param IFactory $factory
 	 * @return self
 	 */
-	public function setFactory(IFactory $provider) {
-		$this->factory = $provider;
+	public function setFactory(IFactory $factory) {
+		$this->factory = $factory;
 
 		return $this;
 	}
@@ -54,7 +56,7 @@ class Wizard extends Container implements IWizard {
 	}
 
 	/**
-	 * @return Nette\Http\SessionSection
+	 * @return SessionSection
 	 */
 	protected function getSection() {
 		return $this->session->getSection('wizard' . $this->getName())->setExpiration($this->expiration);
@@ -73,13 +75,13 @@ class Wizard extends Container implements IWizard {
 
 	/**
 	 * @param bool $asArray
-	 * @return array|Nette\Utils\ArrayHash
+	 * @return array|ArrayHash
 	 */
 	public function getValues($asArray = FALSE) {
 		if ($asArray) {
 			return (array) $this->getSection()->values;
 		} else {
-			return Nette\Utils\ArrayHash::from((array) $this->getSection()->values);
+			return ArrayHash::from((array) $this->getSection()->values);
 		}
 	}
 
@@ -111,75 +113,98 @@ class Wizard extends Container implements IWizard {
 		} else {
 			$form = new Form;
 		}
-		$form->onSubmit[] = [$this, 'submitStep'];
 
 		return $form;
 	}
 
 	/**
-	 * @param Form $form
+	 * @param SubmitButton $button
 	 */
-	public function submitStep(Form $form) {
-		$submitName = $form->getSubmittedName();
+	public function submitStep(SubmitButton $button) {
+		$form = $button->getForm();
+		$submitName = $button->getName();
 
 		if ($submitName === self::PREV_SUBMIT_NAME) {
 			$currentStep = $this->getCurrentStep();
 			$this->getSection()->currentStep = $currentStep - 1;
+
 		} else if ($submitName === self::NEXT_SUBMIT_NAME && $form->isValid()) {
-			$this->getSection()->values = array_merge((array) $this->getSection()->values, $form->getValues(TRUE));
-			$currentStep = $this->getCurrentStep();
-			$this->getSection()->lastStep = $this->getSection()->currentStep = $currentStep + 1;
+			$this->merge($form->getValues(TRUE));
+			$this->getSection()->lastStep = $this->getSection()->currentStep = $this->getCurrentStep() + 1;
+
 		} else if ($submitName === self::FINISH_SUBMIT_NAME && $form->isValid() && $this->getSection()->values !== NULL) {
-			$this->getSection()->values = array_merge((array) $this->getSection()->values, $form->getValues(TRUE));
+			$this->merge($form->getValues(TRUE));
 
 			$this->isSuccess = TRUE;
 			$this->finish();
-			$this->onSuccess($this);
+			foreach ($this->onSuccess as $callback) {
+				$callback($this);
+			}
 			$this->resetSection();
 		}
 	}
 
 	/**
-	 * @return string
+	 * @param array $array
 	 */
+	private function merge(array $array) {
+		$this->getSection()->values = array_merge((array) $this->getSection()->values, $array);
+	}
+
 	public function render() {
-		return $this->create()->render();
+		$this->create()->render();
 	}
 
 	/**
-	 * @param string $name
+	 * @param string $step
 	 * @return Form
 	 */
 	public function create($step = NULL) {
 		/** @var Form $form */
 		$form = $this->getComponent('step' . ($step !== NULL ? $step : $this->getCurrentStep()));
-
 		$form->setValues($this->getValues(TRUE));
-
-		foreach ($form->getComponents(FALSE, 'Nette\Forms\Controls\SubmitButton') as $control) {
-			if ($control->name === self::PREV_SUBMIT_NAME) {
-				$control->getControlPrototype()->data('novalidate', '');
-			}
-		}
 
 		return $form;
 	}
 
 	/**
 	 * Control factory. Delegates the creation of components to a createComponent<Name> method.
-	 * @param  string      component name
-	 * @return Form  the created component (optionally)
+	 *
+	 * @param  string $name component name
+	 * @return Form the created component (optionally)
 	 */
 	protected function createComponent($name) {
 		$ucname = ucfirst($name);
 		$method = 'create' . $ucname;
 		if ($ucname !== $name && method_exists($this, $method) && $this->getReflection()->getMethod($method)->getName() === $method) {
 			$component = $this->$method($name);
-			if (!$component instanceof Nette\ComponentModel\IComponent && !isset($this->components[$name])) {
+			if (!$component instanceof Forms\Form && !isset($this->components[$name])) {
 				$class = get_class($this);
-				throw new Nette\UnexpectedValueException("Method $class::$method() did not return or create the desired component.");
+				throw new UnexpectedValueException("Method $class::$method() did not return or create Nette\\Forms\\Form.");
 			}
+			$this->applyCallbacksToButtons($component);
+
 			return $component;
+		}
+
+		return NULL;
+	}
+
+	/**
+	 * @param Forms\Form $form
+	 */
+	private function applyCallbacksToButtons(Forms\Form $form) {
+		/** @var SubmitButton $control */
+		foreach ($form->getComponents(FALSE, 'Nette\Forms\Controls\SubmitButton') as $control) {
+			if (!in_array($control->getName(), array(self::FINISH_SUBMIT_NAME, self::NEXT_SUBMIT_NAME, self::PREV_SUBMIT_NAME))) {
+				continue;
+			}
+
+			$control->onClick[] = array($this, 'submitStep');
+			$control->onInvalidClick[] = array($this, 'submitStep');
+			if ($control->getName() === self::PREV_SUBMIT_NAME) {
+				$control->setValidationScope(FALSE);
+			}
 		}
 	}
 

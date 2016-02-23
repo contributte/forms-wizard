@@ -1,2 +1,10 @@
 <?php
-// Here you can initialize variables that will be available to your tests
+
+class MockLatteFactory implements \Nette\Bridges\ApplicationLatte\ILatteFactory {
+
+	public function create() {
+		return new \Latte\Engine();
+	}
+
+}
+

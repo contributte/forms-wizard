@@ -2,11 +2,11 @@
 
 namespace WebChemistry\Forms\Controls\Wizard;
 
-use Nette;
+use Nette\Object;
 use WebChemistry\Forms\Controls\IWizard;
-use WebChemistry\Forms\Form;
+use Nette\Forms\Form;
 
-class Facade extends Nette\Object {
+class Facade extends Object {
 
 	/** @var IWizard */
 	private $wizard;
@@ -55,24 +55,12 @@ class Facade extends Nette\Object {
 	 * @return int
 	 */
 	public function getTotalSteps() {
-		if ($this->steps !== NULL) {
-			return $this->steps;
+		if ($this->steps === NULL) {
+			for ($iterator = 1;$this->wizard->getComponent('step' . $iterator, FALSE);$iterator++);
+			$this->steps = $iterator - 1;
 		}
 
-		$isEnd = FALSE;
-		$iterator = 1;
-
-		while (!$isEnd) {
-			$component = $this->wizard->getComponent('step' . $iterator, FALSE);
-
-			if ($component) {
-				$iterator++;
-			} else {
-				$isEnd = TRUE;
-			}
-		}
-
-		return $this->steps = $iterator - 1;
+		return $this->steps;
 	}
 
 	/**

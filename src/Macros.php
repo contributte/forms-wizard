@@ -11,6 +11,9 @@ use Nette\Utils\Strings;
 
 class Macros extends MacroSet {
 
+	/**
+	 * @param Engine $latte
+	 */
 	public static function install(Engine $latte) {
 		$me = new self($latte->getCompiler());
 
@@ -18,6 +21,12 @@ class Macros extends MacroSet {
 		$me->addMacro('step', array($me, 'stepStart'), '}');
 	}
 
+	/**
+	 * @param MacroNode $node
+	 * @param PhpWriter $writer
+	 * @return string
+	 * @throws CompileException
+	 */
 	public function wizardStart(MacroNode $node, PhpWriter $writer) {
 		$words = $node->tokenizer->fetchWords();
 		if (!$words) {
@@ -37,6 +46,12 @@ class Macros extends MacroSet {
 		. '$wizard = new WebChemistry\Forms\Controls\Wizard\Facade($_l->tmp);';
 	}
 
+	/**
+	 * @param MacroNode $node
+	 * @param PhpWriter $writer
+	 * @return string
+	 * @throws CompileException
+	 */
 	public function stepStart(MacroNode $node, PhpWriter $writer) {
 		$word = $node->tokenizer->fetchWord();
 		if (!is_numeric($word) && !in_array($word, array('success', '"success"', "'success'"))) {

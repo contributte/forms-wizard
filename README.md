@@ -1,6 +1,7 @@
-# Rozšíření pro WebChemistry\Forms\Form
+# Form wizard for nette/forms
+[![Build Status](https://travis-ci.org/WebChemistry/Forms-Wizard.svg?branch=master)](https://travis-ci.org/WebChemistry/Forms-Wizard)
 
-## Instalace
+## Installation
 
 **Composer**
 ```
@@ -11,10 +12,12 @@ composer require webchemistry/forms-wizard
 
 ```yaml
 extensions:
-    - WebChemistry\Forms\Controls\DI\WizardExtension
+    - WebChemistry\Forms\Controls\DI\WizardExtension ## Autoregistration of macros
 ```
 
-## Komponenta
+# Usage
+
+## Component
 
 ```php
 class Wizard extends WebChemistry\Forms\Wizard\Component {
@@ -26,10 +29,10 @@ class Wizard extends WebChemistry\Forms\Wizard\Component {
     protected function createStep1() {
         $form = $this->getForm();
 
-        $form->addText('name', 'Uživatelské jméno')
+        $form->addText('name', 'User name')
             ->setRequired();
 
-        $form->addSubmit(self::NEXT_SUBMIT_NAME, 'Další');
+        $form->addSubmit(self::NEXT_SUBMIT_NAME, 'Next');
 
         return $form;
     }
@@ -40,20 +43,48 @@ class Wizard extends WebChemistry\Forms\Wizard\Component {
         $form->addText('email', 'Email')
             ->setRequired();
 
-        $form->addSubmit(self::PREV_SUBMIT_NAME, 'Zpět');
-        $form->addSubmit(self::FINISH_SUBMIT_NAME, 'Registrovat');
+        $form->addSubmit(self::PREV_SUBMIT_NAME, 'Back');
+        $form->addSubmit(self::FINISH_SUBMIT_NAME, 'Register');
 
         return $form;
     }
 }
 ```
 
-## Šablona
+```yaml
+services:
+    - Wizard
+```
+
+## Presenter
+
+```php
+
+class HomepagePresenter extends Nette\Application\UI\Presenter {
+
+    /** @var Wizard */
+    private $wizard;
+
+    public function __construct(Wizard $wizard) {
+        $this->wizard = $wizard;
+    }
+
+    protected function createComponentWizard() {
+        return $this->wizard;
+    }
+
+}
+
+```
+
+## Template
 
 ```html
 <div n:wizard="wizard">
     <ul n:if="!$wizard->isSuccess()">
-        <li n:foreach="$wizard->steps as $step" n:class="$wizard->isDisabled($step) ? disabled, $wizard->isActive($step) ? active"><a n:tag-if="$wizard->useLink($step)" n:href="changeStep! $step">{$step}</a></li>
+        <li n:foreach="$wizard->steps as $step" n:class="$wizard->isDisabled($step) ? disabled, $wizard->isActive($step) ? active">
+            <a n:tag-if="$wizard->useLink($step)" n:href="changeStep! $step">{$step}</a>
+        </li>
     </ul>
 
     {step 1}
@@ -65,7 +96,7 @@ class Wizard extends WebChemistry\Forms\Wizard\Component {
     {/step}
 
     {step success}
-        Úspěšně jste se registroval/a.
+        Registration was successful
     {/step}
 </div>
 ```
