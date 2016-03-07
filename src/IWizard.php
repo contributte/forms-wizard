@@ -3,7 +3,8 @@
 namespace WebChemistry\Forms\Controls;
 
 use Nette\ComponentModel\IComponent;
-use WebChemistry\Forms\Form;
+use Nette\Forms\Form;
+use Nette\Utils\ArrayHash;
 use WebChemistry\Forms\Factory\IFactory;
 
 interface IWizard {
@@ -48,7 +49,7 @@ interface IWizard {
 
 
 	/**
-	 * @param string $name
+	 * @param string $step
 	 * @return Form
 	 */
 	public function create($step = NULL);
@@ -57,5 +58,11 @@ interface IWizard {
 	 * @return boolean
 	 */
 	public function isSuccess();
+
+	/**
+	 * @param bool $asArray
+	 * @return array|ArrayHash
+	 */
+	public function getValues($asArray = FALSE);
 
 }

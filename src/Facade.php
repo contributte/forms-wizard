@@ -22,6 +22,14 @@ class Facade extends Object {
 	}
 
 	/**
+	 * @param bool $asArray
+	 * @return array|ArrayHash
+	 */
+	public function getValues($asArray = FALSE) {
+		return $this->wizard->getValues($asArray);
+	}
+
+	/**
 	 * @return Form
 	 */
 	public function getCurrentComponent() {

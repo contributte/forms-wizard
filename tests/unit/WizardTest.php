@@ -162,6 +162,10 @@ class WizardTest extends \Codeception\TestCase\Test {
 		$this->assertTrue($facade->isActive(2));
 		$this->assertFalse($facade->isDisabled(2));
 		$this->assertFalse($facade->isDisabled(1));
+		$this->assertSame(array(
+			'name' => 'Name'
+		), $facade->getValues(TRUE));
+		$this->assertInstanceOf('Nette\Utils\ArrayHash', $facade->getValues());
 	}
 
 	/************************* Helpers **************************/
