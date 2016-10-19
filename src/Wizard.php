@@ -176,7 +176,7 @@ class Wizard extends Container implements IWizard {
 	protected function createComponent($name) {
 		$ucname = ucfirst($name);
 		$method = 'create' . $ucname;
-		if ($ucname !== $name && method_exists($this, $method) && $this->getReflection()->getMethod($method)->getName() === $method) {
+		if ($ucname !== $name && method_exists($this, $method) && (new \ReflectionMethod($this, $method))->getName() === $method) {
 			$component = $this->$method($name);
 			if (!$component instanceof Forms\Form && !isset($this->components[$name])) {
 				$class = get_class($this);
