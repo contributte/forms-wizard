@@ -25,7 +25,7 @@
 </tr>
 </table>
 
-<div><input type="hidden" name="do" value="wizard-step1-submit"><!--[if IE]><input type=IEbug disabled style="display:none"><![endif]--></div>
+<input type="hidden" name="_do" value="wizard-step1-submit"><!--[if IE]><input type=IEbug disabled style="display:none"><![endif]-->
 </form>
 
 
