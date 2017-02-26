@@ -1,5 +1,5 @@
 # Form wizard for nette/forms
-[![Build Status](https://travis-ci.org/WebChemistry/Forms-Wizard.svg?branch=master)](https://travis-ci.org/WebChemistry/Forms-Wizard)
+[![Build Status](https://travis-ci.org/WebChemistry/wizard.svg?branch=master)](https://travis-ci.org/WebChemistry/wizard)
 
 ## Installation
 
