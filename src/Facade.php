@@ -64,7 +64,7 @@ class Facade extends Object {
 	 */
 	public function getTotalSteps() {
 		if ($this->steps === NULL) {
-			for ($iterator = 1;$this->wizard->getComponent('step' . $iterator, FALSE);$iterator++);
+			for ($iterator = 1; $this->wizard->getComponent('step' . $iterator, FALSE); $iterator++);
 			$this->steps = $iterator - 1;
 		}
 

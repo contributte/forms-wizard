@@ -21,7 +21,7 @@ class Wizard extends Container implements IWizard {
 	protected $expiration = '+ 20 minutes';
 
 	/** @var array */
-	public $onSuccess = array();
+	public $onSuccess = [];
 
 	/** @var IFactory */
 	private $factory;
@@ -111,7 +111,7 @@ class Wizard extends Container implements IWizard {
 		if ($this->factory) {
 			$form = $this->factory->create();
 		} else {
-			$form = new Form;
+			$form = new Form();
 		}
 
 		return $form;
@@ -195,13 +195,13 @@ class Wizard extends Container implements IWizard {
 	 */
 	private function applyCallbacksToButtons(Forms\Form $form) {
 		/** @var SubmitButton $control */
-		foreach ($form->getComponents(FALSE, 'Nette\Forms\Controls\SubmitButton') as $control) {
-			if (!in_array($control->getName(), array(self::FINISH_SUBMIT_NAME, self::NEXT_SUBMIT_NAME, self::PREV_SUBMIT_NAME))) {
+		foreach ($form->getComponents(FALSE, SubmitButton::class) as $control) {
+			if (!in_array($control->getName(), [self::FINISH_SUBMIT_NAME, self::NEXT_SUBMIT_NAME, self::PREV_SUBMIT_NAME])) {
 				continue;
 			}
 
-			$control->onClick[] = array($this, 'submitStep');
-			$control->onInvalidClick[] = array($this, 'submitStep');
+			$control->onClick[] = [$this, 'submitStep'];
+			$control->onInvalidClick[] = [$this, 'submitStep'];
 			if ($control->getName() === self::PREV_SUBMIT_NAME) {
 				$control->setValidationScope(FALSE);
 			}

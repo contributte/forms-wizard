@@ -3,6 +3,7 @@
 namespace WebChemistry\Forms\Controls\DI;
 
 use Nette\DI\CompilerExtension;
+use WebChemistry\Forms\Controls\Wizard\Macros;
 
 class WizardExtension extends CompilerExtension {
 
@@ -15,7 +16,7 @@ class WizardExtension extends CompilerExtension {
 		$builder = $this->getContainerBuilder();
 
 		$builder->getDefinition('nette.latteFactory')
-				->addSetup('WebChemistry\Forms\Controls\Wizard\Macros::install(?)', array('@self'));
+			->addSetup(Macros::class . '::install(?)', array('@self'));
 	}
 
 }

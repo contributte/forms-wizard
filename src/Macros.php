@@ -17,8 +17,8 @@ class Macros extends MacroSet {
 	public static function install(Engine $latte) {
 		$me = new self($latte->getCompiler());
 
-		$me->addMacro('wizard', array($me, 'wizardStart'), array($me, 'wizardEnd'));
-		$me->addMacro('step', array($me, 'stepStart'), '}');
+		$me->addMacro('wizard', [$me, 'wizardStart'], [$me, 'wizardEnd']);
+		$me->addMacro('step', [$me, 'stepStart'], '}');
 	}
 
 	/**
@@ -54,7 +54,7 @@ class Macros extends MacroSet {
 	 */
 	public function stepStart(MacroNode $node, PhpWriter $writer) {
 		$word = $node->tokenizer->fetchWord();
-		if (!is_numeric($word) && !in_array($word, array('success', '"success"', "'success'"))) {
+		if (!is_numeric($word) && !in_array($word, ['success', '"success"', "'success'"])) {
 			throw new CompileException('First parameter in {step} must be a numeric.');
 		}
 
