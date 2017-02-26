@@ -107,7 +107,7 @@ class Wizard extends Container implements IWizard {
 	/**
 	 * @return Form
 	 */
-	protected function getForm() {
+	protected function createForm() {
 		if ($this->factory) {
 			$form = $this->factory->create();
 		} else {
@@ -115,6 +115,14 @@ class Wizard extends Container implements IWizard {
 		}
 
 		return $form;
+	}
+
+	/**
+	 * @return Form
+	 * @deprecated
+	 */
+	protected function getForm() {
+		return $this->createForm();
 	}
 
 	/**
