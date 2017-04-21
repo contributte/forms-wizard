@@ -20,7 +20,7 @@ extensions:
 ## Component
 
 ```php
-class Wizard extends WebChemistry\Forms\Wizard\Component {
+class Wizard extends use WebChemistry\Forms\Controls\Wizard {
 
     protected function finish() {
         $values = $this->getValues();
@@ -67,6 +67,11 @@ class HomepagePresenter extends Nette\Application\UI\Presenter {
 
     public function __construct(Wizard $wizard) {
         $this->wizard = $wizard;
+    }
+    
+    public function handleChangeStep($step) {    
+        $this->getComponent("wizard")->setStep($step);
+        //$this->redirect("this"); // Optional, hides parameter from URL
     }
 
     protected function createComponentWizard() {

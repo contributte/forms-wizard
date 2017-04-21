@@ -97,7 +97,8 @@ class Wizard extends Container implements IWizard {
 	 * @return Wizard
 	 */
 	public function setStep($step) {
-		if ($this->getLastStep() >= $step && $step > 0 && $this->getComponent($step, FALSE)) {
+		$step = (int)$step;
+		if ($this->getLastStep() >= $step && $step > 0 && $this->getComponent("step" . $step, FALSE)) {
 			$this->getSection()->currentStep = $step;
 		}
 
