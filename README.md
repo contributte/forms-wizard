@@ -20,7 +20,7 @@ extensions:
 ## Component
 
 ```php
-class Wizard extends use WebChemistry\Forms\Controls\Wizard {
+class Wizard extends WebChemistry\Forms\Controls\Wizard {
 
     protected function finish() {
         $values = $this->getValues();
