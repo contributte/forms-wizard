@@ -5,7 +5,7 @@ namespace WebChemistry\Forms\Controls;
 use Nette\ComponentModel\IComponent;
 use Nette\Forms\Form;
 use Nette\Utils\ArrayHash;
-use WebChemistry\Forms\Factory\IFactory;
+use WebChemistry\Forms\Factory\IFormFactory;
 
 interface IWizard {
 
@@ -16,7 +16,7 @@ interface IWizard {
 	/**
 	 * @return IWizard
 	 */
-	public function setFactory(IFactory $factory);
+	public function setFactory(IFormFactory $factory);
 
 	/**
 	 * @return int
