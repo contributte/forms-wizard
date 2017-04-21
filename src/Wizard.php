@@ -9,7 +9,7 @@ use Nette\Application\UI\Form;
 use Nette\Http\SessionSection;
 use Nette\UnexpectedValueException;
 use Nette\Utils\ArrayHash;
-use WebChemistry\Forms\Factory\IFactory;
+use WebChemistry\Forms\Factory\IFormFactory;
 use Nette\Forms;
 
 class Wizard extends Container implements IWizard {
@@ -23,7 +23,7 @@ class Wizard extends Container implements IWizard {
 	/** @var array */
 	public $onSuccess = [];
 
-	/** @var IFactory */
+	/** @var IFormFactory */
 	private $factory;
 
 	/** @var bool */
@@ -37,10 +37,10 @@ class Wizard extends Container implements IWizard {
 	}
 
 	/**
-	 * @param IFactory $factory
+	 * @param IFormFactory $factory
 	 * @return self
 	 */
-	public function setFactory(IFactory $factory) {
+	public function setFactory(IFormFactory $factory) {
 		$this->factory = $factory;
 
 		return $this;
