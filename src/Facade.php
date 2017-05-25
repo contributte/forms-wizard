@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace WebChemistry\Forms\Controls\Wizard;
 
-use Nette\Object;
+use Nette\Utils\ObjectMixin;
 use WebChemistry\Forms\Controls\IWizard;
 use Nette\Forms\Form;
 
-class Facade extends Object {
+class Facade {
 
 	/** @var IWizard */
 	private $wizard;
@@ -115,6 +115,22 @@ class Facade extends Object {
 	 */
 	public function isDisabled(int $step): bool {
 		return $step > $this->getLastStep();
+	}
+
+	public function &__get(string $name) {
+		return ObjectMixin::get($this, $name);
+	}
+
+	public function __set(string $name, $value) {
+		ObjectMixin::strictSet(self::class, $value);
+	}
+
+	public function __call(string $name, $args) {
+		ObjectMixin::strictCall(self::class, $args);
+	}
+
+	public static function __callStatic(string $name, $args) {
+		ObjectMixin::strictStaticCall($name, $args);
 	}
 
 }
