@@ -36,8 +36,8 @@ interface IWizard {
 
 	/**
 	 * Returns component specified by name or path.
-	 * @param  string
-	 * @param  bool   throw exception if component doesn't exist?
+	 * @param $name string
+	 * @param $need bool throw exception if component doesn't exist?
 	 * @return IComponent|NULL
 	 */
 	public function getComponent($name, $need = TRUE);

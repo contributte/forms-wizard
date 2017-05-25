@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace WebChemistry\Forms\Controls\Wizard;
 
+use Nette\Utils\ArrayHash;
 use Nette\Utils\ObjectMixin;
 use WebChemistry\Forms\Controls\IWizard;
 use Nette\Forms\Form;
@@ -13,7 +14,7 @@ class Facade {
 	/** @var IWizard */
 	private $wizard;
 
-	/** @var int */
+	/** @var int|NULL */
 	private $steps = NULL;
 
 	/**
@@ -66,7 +67,10 @@ class Facade {
 	 */
 	public function getTotalSteps(): int {
 		if ($this->steps === NULL) {
-			for ($iterator = 1; $this->wizard->getComponent('step' . $iterator, FALSE); $iterator++);
+			$iterator = 1;
+			while ($this->wizard->getComponent('step' . $iterator, FALSE)) {
+				$iterator++;
+			}
 			$this->steps = $iterator - 1;
 		}
 

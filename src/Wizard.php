@@ -3,6 +3,7 @@
 namespace WebChemistry\Forms\Controls;
 
 use Nette\ComponentModel\Container;
+use Nette\ComponentModel\IComponent;
 use Nette\Forms\Controls\SubmitButton;
 use Nette\Http\Session;
 use Nette\Application\UI\Form;
@@ -33,6 +34,8 @@ class Wizard extends Container implements IWizard {
 	 * @param Session $session
 	 */
 	public function __construct(Session $session) {
+		parent::__construct();
+
 		$this->session = $session;
 	}
 
@@ -164,10 +167,10 @@ class Wizard extends Container implements IWizard {
 	/**
 	 * Control factory. Delegates the creation of components to a createComponent<Name> method.
 	 *
-	 * @param  string $name component name
-	 * @return Form the created component (optionally)
+	 * @param string $name component name
+	 * @return IComponent|NULL the created component (optionally)
 	 */
-	protected function createComponent($name) {
+	protected function createComponent($name): ?IComponent {
 		$ucname = ucfirst($name);
 		$method = 'create' . $ucname;
 		if ($ucname !== $name && method_exists($this, $method) && (new \ReflectionMethod($this, $method))->getName() === $method) {
