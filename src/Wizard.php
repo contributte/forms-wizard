@@ -38,38 +38,38 @@ class Wizard extends Container implements IWizard {
 
 	/**
 	 * @param IFormFactory $factory
-	 * @return self
+	 * @return IWizard
 	 */
-	public function setFactory(IFormFactory $factory) {
+	public function setFactory(IFormFactory $factory): IWizard {
 		$this->factory = $factory;
 
 		return $this;
 	}
 
-	protected function finish() {}
+	protected function finish(): void {}
 
 	/**
 	 * @return bool
 	 */
-	public function isSuccess() {
+	public function isSuccess(): bool {
 		return $this->isSuccess;
 	}
 
 	/**
 	 * @return SessionSection
 	 */
-	protected function getSection() {
+	protected function getSection(): SessionSection {
 		return $this->session->getSection('wizard' . $this->getName())->setExpiration($this->expiration);
 	}
 
-	private function resetSection() {
+	private function resetSection(): void {
 		$this->getSection()->remove();
 	}
 
 	/**
 	 * @return int
 	 */
-	public function getCurrentStep() {
+	public function getCurrentStep(): int {
 		return $this->getSection()->currentStep ? : 1;
 	}
 
@@ -77,7 +77,7 @@ class Wizard extends Container implements IWizard {
 	 * @param bool $asArray
 	 * @return array|ArrayHash
 	 */
-	public function getValues($asArray = FALSE) {
+	public function getValues(bool $asArray = FALSE) {
 		if ($asArray) {
 			return (array) $this->getSection()->values;
 		} else {
@@ -88,16 +88,15 @@ class Wizard extends Container implements IWizard {
 	/**
 	 * @return int
 	 */
-	public function getLastStep() {
+	public function getLastStep(): int {
 		return $this->getSection()->lastStep ? : 1;
 	}
 
 	/**
-	 * @param $step
-	 * @return Wizard
+	 * @param int $step
+	 * @return IWizard
 	 */
-	public function setStep($step) {
-		$step = (int)$step;
+	public function setStep(int $step): IWizard {
 		if ($this->getLastStep() >= $step && $step > 0 && $this->getComponent("step" . $step, FALSE)) {
 			$this->getSection()->currentStep = $step;
 		}
@@ -108,28 +107,14 @@ class Wizard extends Container implements IWizard {
 	/**
 	 * @return Form
 	 */
-	protected function createForm() {
-		if ($this->factory) {
-			$form = $this->factory->create();
-		} else {
-			$form = new Form();
-		}
-
-		return $form;
-	}
-
-	/**
-	 * @return Form
-	 * @deprecated
-	 */
-	protected function getForm() {
-		return $this->createForm();
+	protected function createForm(): Form {
+		return $this->factory ? $this->factory->create() : new Form();
 	}
 
 	/**
 	 * @param SubmitButton $button
 	 */
-	public function submitStep(SubmitButton $button) {
+	public function submitStep(SubmitButton $button): void {
 		$form = $button->getForm();
 		$submitName = $button->getName();
 
@@ -156,7 +141,7 @@ class Wizard extends Container implements IWizard {
 	/**
 	 * @param array $array
 	 */
-	private function merge(array $array) {
+	private function merge(array $array): void {
 		$this->getSection()->values = array_merge((array) $this->getSection()->values, $array);
 	}
 
@@ -168,7 +153,7 @@ class Wizard extends Container implements IWizard {
 	 * @param string $step
 	 * @return Form
 	 */
-	public function create($step = NULL) {
+	public function create(string $step = NULL): Form {
 		/** @var Form $form */
 		$form = $this->getComponent('step' . ($step !== NULL ? $step : $this->getCurrentStep()));
 		$form->setValues($this->getValues(TRUE));
@@ -202,7 +187,7 @@ class Wizard extends Container implements IWizard {
 	/**
 	 * @param Forms\Form $form
 	 */
-	private function applyCallbacksToButtons(Forms\Form $form) {
+	private function applyCallbacksToButtons(Forms\Form $form): void {
 		/** @var SubmitButton $control */
 		foreach ($form->getComponents(FALSE, SubmitButton::class) as $control) {
 			if (!in_array($control->getName(), [self::FINISH_SUBMIT_NAME, self::NEXT_SUBMIT_NAME, self::PREV_SUBMIT_NAME])) {

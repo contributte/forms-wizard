@@ -12,7 +12,7 @@ class Wizard extends \WebChemistry\Forms\Controls\Wizard {
 		self::$values = [];
 	}
 
-	protected function finish() {
+	protected function finish(): void {
 		self::$values = $this->getValues(TRUE);
 		self::$called++;
 	}

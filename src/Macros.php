@@ -14,7 +14,7 @@ class Macros extends MacroSet {
 	/**
 	 * @param Engine $latte
 	 */
-	public static function install(Engine $latte) {
+	public static function install(Engine $latte): void {
 		$me = new self($latte->getCompiler());
 
 		$me->addMacro('wizard', [$me, 'wizardStart'], [$me, 'wizardEnd']);
@@ -27,7 +27,7 @@ class Macros extends MacroSet {
 	 * @return string
 	 * @throws CompileException
 	 */
-	public function wizardStart(MacroNode $node, PhpWriter $writer) {
+	public function wizardStart(MacroNode $node, PhpWriter $writer): string {
 		$words = $node->tokenizer->fetchWords();
 		if (!$words) {
 			throw new CompileException('Missing control name in {wizard}');
@@ -52,7 +52,7 @@ class Macros extends MacroSet {
 	 * @return string
 	 * @throws CompileException
 	 */
-	public function stepStart(MacroNode $node, PhpWriter $writer) {
+	public function stepStart(MacroNode $node, PhpWriter $writer): string {
 		$word = $node->tokenizer->fetchWord();
 		if (!is_numeric($word) && !in_array($word, ['success', '"success"', "'success'"])) {
 			throw new CompileException('First parameter in {step} must be a numeric.');

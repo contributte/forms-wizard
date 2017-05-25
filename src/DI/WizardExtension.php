@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace WebChemistry\Forms\Controls\DI;
 
 use Nette\DI\CompilerExtension;
@@ -12,7 +14,7 @@ class WizardExtension extends CompilerExtension {
 	 *
 	 * @return void
 	 */
-	public function beforeCompile() {
+	public function beforeCompile(): void {
 		$builder = $this->getContainerBuilder();
 
 		$builder->getDefinition('nette.latteFactory')

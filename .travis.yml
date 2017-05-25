@@ -4,13 +4,7 @@ os:
   - linux
 
 php:
-  - 5.6
-  - 7.0
-  - hhvm
-
-matrix:
-  allow_failures:
-    - php: hhvm
+  - 7.1
 
 install:
     - composer self-update

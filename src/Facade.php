@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace WebChemistry\Forms\Controls\Wizard;
 
 use Nette\Object;
@@ -25,14 +27,14 @@ class Facade extends Object {
 	 * @param bool $asArray
 	 * @return array|ArrayHash
 	 */
-	public function getValues($asArray = FALSE) {
+	public function getValues(bool $asArray = FALSE) {
 		return $this->wizard->getValues($asArray);
 	}
 
 	/**
 	 * @return Form
 	 */
-	public function getCurrentComponent() {
+	public function getCurrentComponent(): Form {
 		return $this->wizard->create();
 	}
 
@@ -40,7 +42,7 @@ class Facade extends Object {
 	 * @param int $step
 	 * @return bool
 	 */
-	public function useLink($step) {
+	public function useLink(int $step): bool {
 		return !$this->isDisabled($step) && !$this->isCurrent($step);
 	}
 
@@ -48,21 +50,21 @@ class Facade extends Object {
 	 * @param int $step
 	 * @return bool
 	 */
-	public function isCurrent($step) {
+	public function isCurrent(int $step): bool {
 		return $this->getCurrentStep() === $step;
 	}
 
 	/**
-	 * @return boolean
+	 * @return bool
 	 */
-	public function isSuccess() {
+	public function isSuccess(): bool {
 		return $this->wizard->isSuccess();
 	}
 
 	/**
 	 * @return int
 	 */
-	public function getTotalSteps() {
+	public function getTotalSteps(): int {
 		if ($this->steps === NULL) {
 			for ($iterator = 1; $this->wizard->getComponent('step' . $iterator, FALSE); $iterator++);
 			$this->steps = $iterator - 1;
@@ -74,7 +76,7 @@ class Facade extends Object {
 	/**
 	 * @return array
 	 */
-	public function getSteps() {
+	public function getSteps(): array {
 		return range(1, $this->getTotalSteps());
 	}
 
@@ -88,14 +90,14 @@ class Facade extends Object {
 	/**
 	 * @return int
 	 */
-	public function getCurrentStep() {
+	public function getCurrentStep(): int {
 		return $this->wizard->getCurrentStep();
 	}
 
 	/**
 	 * @return int
 	 */
-	public function getLastStep() {
+	public function getLastStep(): int {
 		return $this->wizard->getLastStep();
 	}
 
@@ -103,7 +105,7 @@ class Facade extends Object {
 	 * @param int $step
 	 * @return bool
 	 */
-	public function isActive($step) {
+	public function isActive(int $step): bool {
 		return $step === $this->getCurrentStep();
 	}
 
@@ -111,7 +113,7 @@ class Facade extends Object {
 	 * @param int $step
 	 * @return bool
 	 */
-	public function isDisabled($step) {
+	public function isDisabled(int $step): bool {
 		return $step > $this->getLastStep();
 	}
 

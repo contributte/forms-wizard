@@ -3,7 +3,7 @@
 namespace WebChemistry\Forms\Controls;
 
 use Nette\ComponentModel\IComponent;
-use Nette\Forms\Form;
+use Nette\Application\UI\Form;
 use Nette\Utils\ArrayHash;
 use WebChemistry\Forms\Factory\IFormFactory;
 
@@ -16,23 +16,23 @@ interface IWizard {
 	/**
 	 * @return IWizard
 	 */
-	public function setFactory(IFormFactory $factory);
+	public function setFactory(IFormFactory $factory): IWizard;
 
 	/**
 	 * @return int
 	 */
-	public function getCurrentStep();
+	public function getCurrentStep(): int;
 
 	/**
 	 * @return int
 	 */
-	public function getLastStep();
+	public function getLastStep(): int;
 
 	/**
 	 * @param int $step
 	 * @return IWizard
 	 */
-	public function setStep($step);
+	public function setStep(int $step): IWizard;
 
 	/**
 	 * Returns component specified by name or path.
@@ -52,17 +52,17 @@ interface IWizard {
 	 * @param string $step
 	 * @return Form
 	 */
-	public function create($step = NULL);
+	public function create(string $step = NULL): Form;
 
 	/**
-	 * @return boolean
+	 * @return bool
 	 */
-	public function isSuccess();
+	public function isSuccess(): bool;
 
 	/**
 	 * @param bool $asArray
 	 * @return array|ArrayHash
 	 */
-	public function getValues($asArray = FALSE);
+	public function getValues(bool $asArray = FALSE);
 
 }
