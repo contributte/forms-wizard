@@ -9,7 +9,7 @@ use Nette\Application\UI\Form;
 use Nette\Http\SessionSection;
 use Nette\UnexpectedValueException;
 use Nette\Utils\ArrayHash;
-use WebChemistry\Forms\Factory\IFormFactory;
+use WebChemistry\Forms\Controls\Wizard\IFormFactory;
 use Nette\Forms;
 
 class Wizard extends Container implements IWizard {

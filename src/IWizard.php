@@ -5,7 +5,7 @@ namespace WebChemistry\Forms\Controls;
 use Nette\ComponentModel\IComponent;
 use Nette\Application\UI\Form;
 use Nette\Utils\ArrayHash;
-use WebChemistry\Forms\Factory\IFormFactory;
+use WebChemistry\Forms\Controls\Wizard\IFormFactory;
 
 interface IWizard {
 
