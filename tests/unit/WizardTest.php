@@ -1,29 +1,24 @@
 <?php
 
+use WebChemistry\Testing\TUnitTest;
+
 class WizardTest extends \Codeception\TestCase\Test {
 
-	/**
-	 * @var \UnitTester
-	 */
-	protected $tester;
+	use TUnitTest;
 
 	/** @var \WebChemistry\Forms\Controls\Wizard */
 	protected $wizard;
 
-	/** @var \Nette\Http\Session */
-	private $session;
-
 	protected function _before() {
-		$this->session = new \Nette\Http\Session(
+		$session = new \Nette\Http\Session(
 			new \Nette\Http\Request(new \Nette\Http\UrlScript()), new \Nette\Http\Response()
 		);
-		$this->session = new \Kdyby\FakeSession\Session($this->session);
-		$this->session->start();
+		$session->start();
+		$this->wizard = new Wizard($session);
 
-		$this->wizard = new Wizard($this->session);
-	}
-
-	protected function _after() {
+		$this->services->presenter->setMapping([
+			'*' => '*Presenter',
+		]);
 	}
 
 	public function testSteps() {
@@ -44,12 +39,20 @@ class WizardTest extends \Codeception\TestCase\Test {
 	}
 
 	public function testInvalidSubmit() {
-		$response = NULL;
-		$wizard = $this->sendRequestToPresenter('wizard', 'step1', array(
-			\Wizard::NEXT_SUBMIT_NAME => 'submit'
-		), $response);
+		$hierarchy = $this->services->hierarchy->createHierarchy('Wizard');
 
-		$this->assertStringEqualsFile(__DIR__ . '/expected/start.expected', $response);
+		$response = $hierarchy->getControl('wizard')
+			->getForm('step1')
+			->setValues([
+				Wizard::NEXT_SUBMIT_NAME => 'submit',
+			])
+			->send();
+
+
+		/** @var Wizard $wizard */
+		$wizard = $response->getForm()->getParent();
+		$this->assertStringEqualsFile(__DIR__ . '/expected/start.expected', $response->toString());
+
 		$this->assertSame(1, $wizard->getCurrentStep());
 		$this->assertSame(0, Wizard::$called);
 		$this->assertSame($wizard->create(1), $wizard->create());
@@ -57,71 +60,82 @@ class WizardTest extends \Codeception\TestCase\Test {
 	}
 
 	public function testSubmit() {
-		$response = NULL;
-		$wizard = $this->sendRequestToPresenter('wizard', 'step1', array(
-			'name' => 'Name',
-			\Wizard::NEXT_SUBMIT_NAME => 'submit'
-		), $response);
+		$hierarchy = $this->services->hierarchy->createHierarchy('Wizard');
 
-		$this->assertStringEqualsFile(__DIR__ . '/expected/step2.expected', $response);
+		$response = $hierarchy->getControl('wizard')
+			->getForm('step1')
+			->setValues([
+				'name' => 'foo',
+				Wizard::NEXT_SUBMIT_NAME => 'submit',
+			])->send();
+
+		/** @var Wizard $wizard */
+		$wizard = $response->getForm()->getParent();
+
+		$this->assertStringEqualsFile(__DIR__ . '/expected/step2.expected', $response->toString());
 		$this->assertFalse($wizard->isSuccess());
 		$this->assertSame(2, $wizard->getCurrentStep());
 		$this->assertSame($wizard->create(2), $wizard->create());
 		$this->assertSame(2, $wizard->getLastStep());
 		$this->assertSame(0, Wizard::$called);
 		$this->assertSame(array(
-			'name' => 'Name'
+			'name' => 'foo'
 		), $wizard->getValues(TRUE));
 	}
 
 	public function testSubmitBack() {
-		$response = NULL;
-		$wizard = $this->sendRequestToPresenter('wizard', 'step1', array(
-			'name' => 'Name',
-			\Wizard::NEXT_SUBMIT_NAME => 'submit'
-		), $response);
+		$hierarchy = $this->services->hierarchy->createHierarchy('Wizard');
 
-		$this->assertStringEqualsFile(__DIR__ . '/expected/step2.expected', $response);
-		$this->assertSame(2, $wizard->getCurrentStep());
-		$this->assertSame($wizard->create(2), $wizard->create());
-		$this->assertSame(2, $wizard->getLastStep());
+		// Submit step1
+		$hierarchy->getControl('wizard')
+			->getForm('step1')
+			->setValues([
+				'name' => 'foo',
+				Wizard::NEXT_SUBMIT_NAME => 'submit',
+			])->send();
 
-		// Back
-		$wizard = $this->sendRequestToPresenter('wizard', 'step2', array(
-			\Wizard::PREV_SUBMIT_NAME => 'submit'
-		), $response);
+		$hierarchy->cleanup();
 
-		$this->assertFalse($wizard->isSuccess());
-		$this->assertSame(1, $wizard->getCurrentStep());
-		$this->assertSame(2, $wizard->getLastStep());
-		$this->assertSame(0, Wizard::$called);
-		$this->assertSame(array(
-			'name' => 'Name'
-		), $wizard->getValues(TRUE));
+		// Checks if current form is step2
+		$this->assertStringEqualsFile(__DIR__ . '/expected/step2.expected', $hierarchy->send()->toString());
+
+		$hierarchy->cleanup();
+
+		// Submit step2 to step1
+		$response = $hierarchy->getControl('wizard')
+			->getForm('step2')
+			->setValues([
+				Wizard::PREV_SUBMIT_NAME => 'submit',
+			])->send();
+
+		$this->assertTrue($response->toDomQuery()->has('#frm-wizard-step1-name'));
 	}
 
 	public function testFinish() {
-		$response = NULL;
-		$wizard = $this->sendRequestToPresenter('wizard', 'step1', array(
-			'name' => 'Name',
-			\Wizard::NEXT_SUBMIT_NAME => 'submit'
-		), $response);
+		$hierarchy = $this->services->hierarchy->createHierarchy('Wizard');
 
-		$this->assertStringEqualsFile(__DIR__ . '/expected/step2.expected', $response);
-		$this->assertFalse($wizard->isSuccess());
-		$this->assertSame(0, Wizard::$called);
-		$this->assertSame(2, $wizard->getCurrentStep());
-		$this->assertSame($wizard->create(2), $wizard->create());
-		$this->assertSame(2, $wizard->getLastStep());
+		// Submit step1
+		$hierarchy->getControl('wizard')
+			->getForm('step1')
+			->setValues([
+				'name' => 'Name',
+				Wizard::NEXT_SUBMIT_NAME => 'submit',
+			])->send();
 
-		// Second
-		$wizard = $this->sendRequestToPresenter('wizard', 'step2', array(
-			'void' => 'void',
-			'email' => 'email',
-			\Wizard::FINISH_SUBMIT_NAME => 'submit'
-		), $response);
+		$hierarchy->cleanup();
 
-		$this->assertStringEqualsFile(__DIR__ . '/expected/finish.expected', $response);
+		$response = $hierarchy->getControl('wizard')
+			->getForm('step2')
+			->setValues([
+				'void' => 'void',
+				'email' => 'email',
+				Wizard::FINISH_SUBMIT_NAME => 'submit',
+			])->send();
+
+		/** @var Wizard $wizard */
+		$wizard = $response->getForm()->getParent();
+		$this->assertStringEqualsFile(__DIR__ . '/expected/finish.expected', $response->toString());
+
 		$this->assertTrue($wizard->isSuccess());
 		$this->assertSame(1, Wizard::$called);
 		$this->assertSame(array(), $wizard->getValues(TRUE));
@@ -131,75 +145,6 @@ class WizardTest extends \Codeception\TestCase\Test {
 		), Wizard::$values);
 		$this->assertSame(1, $wizard->getCurrentStep());
 		$this->assertSame(1, $wizard->getLastStep());
-	}
-
-	public function testFacade() {
-		$facade = new \WebChemistry\Forms\Controls\Wizard\Facade($this->wizard);
-		$this->assertTrue($facade->isDisabled(2));
-
-		$wizard = $this->sendRequestToPresenter('wizard', 'step1', array(
-			'name' => 'Name',
-			\Wizard::NEXT_SUBMIT_NAME => 'submit'
-		));
-
-		$facade = new \WebChemistry\Forms\Controls\Wizard\Facade($wizard);
-
-		$this->assertSame(2, $facade->getCurrentStep());
-		$this->assertInstanceOf('Nette\Forms\Form', $facade->getCurrentComponent());
-		$this->assertSame('step2', $facade->getCurrentComponent()->getName());
-		$this->assertNotNull($facade->getCurrentComponent()->lookup('Nette\Application\IPresenter', FALSE));
-		$this->assertTrue($facade->useLink(1));
-		$this->assertFalse($facade->useLink(2));
-		$this->assertTrue($facade->isCurrent(2));
-		$this->assertFalse($facade->isCurrent(1));
-		$this->assertFalse($facade->isSuccess());
-		$this->assertSame(2, $facade->getTotalSteps());
-		$this->assertSame([
-			1, 2
-		], $facade->getSteps());
-		$this->assertSame(2, $facade->getLastStep());
-		$this->assertFalse($facade->isActive(1));
-		$this->assertTrue($facade->isActive(2));
-		$this->assertFalse($facade->isDisabled(2));
-		$this->assertFalse($facade->isDisabled(1));
-		$this->assertSame(array(
-			'name' => 'Name'
-		), $facade->getValues(TRUE));
-		$this->assertInstanceOf('Nette\Utils\ArrayHash', $facade->getValues());
-	}
-
-	/************************* Helpers **************************/
-
-	/**
-	 * @param string $name
-	 * @return \Nette\Application\UI\Presenter
-	 */
-	protected function createPresenter($name) {
-		$presenterFactory = new \Nette\Application\PresenterFactory(function ($class) {
-			/** @var \Nette\Application\UI\Presenter $presenter */
-			$presenter = new $class($this->session);
-			$presenter->injectPrimary(NULL, NULL, NULL,
-				new \Nette\Http\Request(new \Nette\Http\UrlScript()), new \Nette\Http\Response(), NULL, NULL,
-				new \Nette\Bridges\ApplicationLatte\TemplateFactory(new MockLatteFactory()));
-			$presenter->autoCanonicalize = FALSE;
-
-			return $presenter;
-		});
-
-		return $presenterFactory->createPresenter($name);
-	}
-
-	protected function sendRequestToPresenter($controlName = 'wizard', $step = 'step1', $post = [], &$response = NULL) {
-		$presenter = $this->createPresenter('Wizard');
-
-		$response = (string) $presenter->run(new \Nette\Application\Request('Wizard', 'POST', [
-			'do' => $controlName . '-' . $step . '-submit'
-		], $post))->getSource();
-
-		/** @var WebChemistry\Forms\Controls\Wizard $form */
-		$form = $presenter[$controlName];
-
-		return $form;
 	}
 
 }

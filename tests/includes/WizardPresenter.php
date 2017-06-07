@@ -5,11 +5,14 @@ use Nette\Http\Session;
 
 class WizardPresenter extends Presenter {
 
-	/** @var Session */
 	private $session;
 
-	public function __construct(Session $session) {
-		$this->session = $session;
+	public function getCustomSession() {
+		if (!$this->session) {
+			$this->session = new Session($this->getHttpRequest(), $this->getHttpResponse());
+		}
+
+		return $this->session;
 	}
 
 	protected function createTemplate() {
@@ -37,6 +40,6 @@ class WizardPresenter extends Presenter {
 	}
 
 	protected function createComponentWizard() {
-		return new \Wizard($this->session);
+		return new \Wizard($this->getCustomSession());
 	}
 }

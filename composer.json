@@ -9,10 +9,10 @@
     "nette/http": "^2.3"
   },
   "require-dev": {
+    "webchemistry/testing-helpers": "dev-master",
     "latte/latte": "^2.3",
-    "codeception/codeception": "^2.1",
+    "codeception/codeception": "^2.3",
     "nette/application": "^2.3",
-    "kdyby/fake-session": "^2.0",
     "phpstan/phpstan": "^0.7.0",
     "phpstan/phpstan-nette": "^0.7.0"
   },
