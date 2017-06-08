@@ -9,6 +9,15 @@ use Nette\Utils\ObjectMixin;
 use WebChemistry\Forms\Controls\IWizard;
 use Nette\Forms\Form;
 
+/**
+ * @property-read array|ArrayHash $values
+ * @property-read Form $currentComponent
+ * @property-read bool $success
+ * @property-read int $totalSteps
+ * @property-read array $steps
+ * @property-read int $currentStep
+ * @property-read int $lastStep
+ */
 class Facade {
 
 	/** @var IWizard */
@@ -121,20 +130,36 @@ class Facade {
 		return $step > $this->getLastStep();
 	}
 
+	/**
+	 * @param string $name
+	 * @return mixed
+	 */
 	public function &__get(string $name) {
 		return ObjectMixin::get($this, $name);
 	}
 
+	/**
+	 * @param string $name
+	 * @param mixed $value
+	 */
 	public function __set(string $name, $value) {
 		ObjectMixin::strictSet(self::class, $value);
 	}
 
-	public function __call(string $name, $args) {
-		ObjectMixin::strictCall(self::class, $args);
+	/**
+	 * @param string $name
+	 * @param array $args
+	 */
+	public function __call(string $name, array $args) {
+		ObjectMixin::strictCall(self::class, $name);
 	}
 
-	public static function __callStatic(string $name, $args) {
-		ObjectMixin::strictStaticCall($name, $args);
+	/**
+	 * @param string $name
+	 * @param array $args
+	 */
+	public static function __callStatic(string $name, array $args) {
+		ObjectMixin::strictStaticCall($name, $name);
 	}
 
 }

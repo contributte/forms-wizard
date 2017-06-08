@@ -15,6 +15,10 @@ use Nette\Forms;
 
 class Wizard extends Container implements IWizard {
 
+	private const CURRENT_STEP = 'currentStep';
+	private const VALUES = 'values';
+	private const LAST_STEP = 'lastStep';
+
 	/** @var Session */
 	private $session;
 
@@ -73,7 +77,7 @@ class Wizard extends Container implements IWizard {
 	 * @return int
 	 */
 	public function getCurrentStep(): int {
-		return $this->getSection()->currentStep ? : 1;
+		return $this->getSection()[self::CURRENT_STEP]? : 1;
 	}
 
 	/**
@@ -82,9 +86,9 @@ class Wizard extends Container implements IWizard {
 	 */
 	public function getValues(bool $asArray = FALSE) {
 		if ($asArray) {
-			return (array) $this->getSection()->values;
+			return (array) $this->getSection()[self::VALUES];
 		} else {
-			return ArrayHash::from((array) $this->getSection()->values);
+			return ArrayHash::from((array) $this->getSection()[self::VALUES]);
 		}
 	}
 
@@ -92,7 +96,7 @@ class Wizard extends Container implements IWizard {
 	 * @return int
 	 */
 	public function getLastStep(): int {
-		return $this->getSection()->lastStep ? : 1;
+		return $this->getSection()[self::LAST_STEP] ? : 1;
 	}
 
 	/**
@@ -101,7 +105,7 @@ class Wizard extends Container implements IWizard {
 	 */
 	public function setStep(int $step): IWizard {
 		if ($this->getLastStep() >= $step && $step > 0 && $this->getComponent("step" . $step, FALSE)) {
-			$this->getSection()->currentStep = $step;
+			$this->getSection()[self::CURRENT_STEP] = $step;
 		}
 
 		return $this;
@@ -123,13 +127,13 @@ class Wizard extends Container implements IWizard {
 
 		if ($submitName === self::PREV_SUBMIT_NAME) {
 			$currentStep = $this->getCurrentStep();
-			$this->getSection()->currentStep = $currentStep - 1;
+			$this->getSection()[self::CURRENT_STEP] = $currentStep - 1;
 
 		} else if ($submitName === self::NEXT_SUBMIT_NAME && $form->isValid()) {
 			$this->merge($form->getValues(TRUE));
-			$this->getSection()->lastStep = $this->getSection()->currentStep = $this->getCurrentStep() + 1;
+			$this->getSection()[self::LAST_STEP] = $this->getSection()[self::CURRENT_STEP] = $this->getCurrentStep() + 1;
 
-		} else if ($submitName === self::FINISH_SUBMIT_NAME && $form->isValid() && $this->getSection()->values !== NULL) {
+		} else if ($submitName === self::FINISH_SUBMIT_NAME && $form->isValid() && $this->getSection()[self::VALUES] !== NULL) {
 			$this->merge($form->getValues(TRUE));
 
 			$this->isSuccess = TRUE;
@@ -145,7 +149,7 @@ class Wizard extends Container implements IWizard {
 	 * @param array $array
 	 */
 	private function merge(array $array): void {
-		$this->getSection()->values = array_merge((array) $this->getSection()->values, $array);
+		$this->getSection()[self::VALUES] = array_merge((array) $this->getSection()[self::VALUES], $array);
 	}
 
 	public function render() {
