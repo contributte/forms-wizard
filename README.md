@@ -1,4 +1,4 @@
-# Form wizard for nette/forms
+# nette/forms wizard
 [![Build Status](https://travis-ci.org/WebChemistry/wizard.svg?branch=master)](https://travis-ci.org/WebChemistry/wizard)
 
 ## Installation
@@ -6,6 +6,11 @@
 **Composer**
 ```
 composer require webchemistry/forms-wizard
+```
+
+**php 5.6**
+```
+composer require webchemistry/forms-wizard:^1.2
 ```
 
 **Config**
@@ -20,13 +25,16 @@ extensions:
 ## Component
 
 ```php
+
+use Nette\Application\UI\Form;
+
 class Wizard extends WebChemistry\Forms\Controls\Wizard {
 
-    protected function finish() {
+    protected function finish(): void {
         $values = $this->getValues();
     }
 
-    protected function createStep1() {
+    protected function createStep1(): Form {
         $form = $this->getForm();
 
         $form->addText('name', 'User name')
@@ -37,7 +45,7 @@ class Wizard extends WebChemistry\Forms\Controls\Wizard {
         return $form;
     }
 
-    protected function createStep2() {
+    protected function createStep2(): Form {
         $form = $this->getForm();
 
         $form->addText('email', 'Email')
@@ -69,12 +77,13 @@ class HomepagePresenter extends Nette\Application\UI\Presenter {
         $this->wizard = $wizard;
     }
     
-    public function handleChangeStep($step) {    
+    public function handleChangeStep($step): void {    
         $this->getComponent("wizard")->setStep($step);
-        //$this->redirect("this"); // Optional, hides parameter from URL
+        
+        $this->redirect("this"); // Optional, hides parameter from URL
     }
 
-    protected function createComponentWizard() {
+    protected function createComponentWizard(): Wizard {
         return $this->wizard;
     }
 
