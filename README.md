@@ -35,7 +35,7 @@ class Wizard extends WebChemistry\Forms\Controls\Wizard {
     }
 
     protected function createStep1(): Form {
-        $form = $this->getForm();
+        $form = $this->createForm();
 
         $form->addText('name', 'User name')
             ->setRequired();
@@ -46,7 +46,7 @@ class Wizard extends WebChemistry\Forms\Controls\Wizard {
     }
 
     protected function createStep2(): Form {
-        $form = $this->getForm();
+        $form = $this->createForm();
 
         $form->addText('email', 'Email')
             ->setRequired();
