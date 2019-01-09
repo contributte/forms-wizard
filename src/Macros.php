@@ -34,10 +34,10 @@ class Macros extends MacroSet {
 		}
 		$name = $writer->formatWord($words[0]);
 
-		return ($name[0] === '$' ? "if (is_object($name)) \$_l->tmp = $name; else " : '')
-		. '$_l->tmp = $_control->getComponent(' . $name . '); '
-		. 'if (!$_l->tmp instanceof WebChemistry\Forms\Controls\IWizard) throw new \Exception(\'Wizard must be instance of WebChemistry\Forms\Controls\IWizard\');'
-		. '$wizard = new WebChemistry\Forms\Controls\Wizard\Facade($_l->tmp);';
+		return ($name[0] === '$' ? "if (is_object($name)) \$_tmp = $name; else " : '')
+		. '$_tmp = $_control->getComponent(' . $name . '); '
+		. 'if (!$_tmp instanceof WebChemistry\Forms\Controls\IWizard) throw new \Exception(\'Wizard must be instance of WebChemistry\Forms\Controls\IWizard\');'
+		. '$wizard = new WebChemistry\Forms\Controls\Wizard\Facade($_tmp);';
 	}
 
 	/**
