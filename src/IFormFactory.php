@@ -1,14 +1,12 @@
-<?php declare(strict_types=1);
+<?php declare(strict_types = 1);
 
-namespace WebChemistry\Forms\Controls\Wizard;
+namespace Contributte\FormWizard;
 
 use Nette\Application\UI\Form;
 
-interface IFormFactory {
+interface IFormFactory
+{
 
-	/**
-	 * @return Form
-	 */
 	public function create(): Form;
 
 }

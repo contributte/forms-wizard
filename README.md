@@ -1,23 +1,18 @@
 # nette/forms wizard
-[![Build Status](https://travis-ci.org/WebChemistry/wizard.svg?branch=master)](https://travis-ci.org/WebChemistry/wizard)
+[![Build Status](https://travis-ci.org/contributte/wizard.svg?branch=master)](https://travis-ci.org/contributte/wizard)
 
 ## Installation
 
 **Composer**
 ```
-composer require webchemistry/forms-wizard
-```
-
-**php 5.6**
-```
-composer require webchemistry/forms-wizard:^1.2
+composer require contributte/forms-wizard
 ```
 
 **Config**
 
 ```yaml
 extensions:
-    - WebChemistry\Forms\Controls\DI\WizardExtension ## Autoregistration of macros
+    - Contributte\FormWizard\DI\WizardExtension
 ```
 
 # Usage
@@ -28,13 +23,15 @@ extensions:
 
 use Nette\Application\UI\Form;
 
-class Wizard extends WebChemistry\Forms\Controls\Wizard {
+class Wizard extends Contribute\FormWizard\Wizard {
 
-    protected function finish(): void {
+    protected function finish(): void 
+    {
         $values = $this->getValues();
     }
 
-    protected function createStep1(): Form {
+    protected function createStep1(): Form 
+    {
         $form = $this->createForm();
 
         $form->addText('name', 'User name')
@@ -45,7 +42,8 @@ class Wizard extends WebChemistry\Forms\Controls\Wizard {
         return $form;
     }
 
-    protected function createStep2(): Form {
+    protected function createStep2(): Form 
+    {
         $form = $this->createForm();
 
         $form->addText('email', 'Email')
@@ -68,22 +66,20 @@ services:
 
 ```php
 
-class HomepagePresenter extends Nette\Application\UI\Presenter {
+final class HomepagePresenter extends Nette\Application\UI\Presenter {
 
-    /** @var Wizard */
-    private $wizard;
-
-    public function __construct(Wizard $wizard) {
-        $this->wizard = $wizard;
-    }
+    /** @var Wizard @inject */
+    public $wizard;
     
-    public function handleChangeStep($step): void {    
-        $this->getComponent("wizard")->setStep($step);
+    public function handleChangeStep(int $step): void 
+    {    
+        $this['wizard']->setStep($step);
         
-        $this->redirect("this"); // Optional, hides parameter from URL
+        $this->redirect('wizard'); // Optional, hides parameter from URL
     }
 
-    protected function createComponentWizard(): Wizard {
+    protected function createComponentWizard(): Wizard 
+    {
         return $this->wizard;
     }
 

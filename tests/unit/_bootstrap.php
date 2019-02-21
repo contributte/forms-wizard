@@ -1,9 +1,14 @@
 <?php
 
-class MockLatteFactory implements \Nette\Bridges\ApplicationLatte\ILatteFactory {
+use Latte\Engine;
+use Nette\Bridges\ApplicationLatte\ILatteFactory;
 
-	public function create() {
-		return new \Latte\Engine();
+class MockLatteFactory implements ILatteFactory
+{
+
+	public function create(): Engine
+	{
+		return new Engine();
 	}
 
 }

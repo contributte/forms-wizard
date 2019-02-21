@@ -1,20 +1,22 @@
 <?php declare(strict_types = 1);
 
-namespace WebChemistry\Forms\Controls\Wizard;
+namespace Contributte\FormWizard\Latte;
 
+use Contributte\FormWizard\Facade;
+use Contributte\FormWizard\IWizard;
+use Exception;
 use Latte\CompileException;
 use Latte\Engine;
-use Latte\Macros\MacroSet;
 use Latte\MacroNode;
+use Latte\Macros\MacroSet;
 use Latte\PhpWriter;
-use Nette\Utils\Strings;
+use Nette\ComponentModel\IComponent;
 
-class Macros extends MacroSet {
+class WizardMacros extends MacroSet
+{
 
-	/**
-	 * @param Engine $latte
-	 */
-	public static function install(Engine $latte): void {
+	public static function install(Engine $latte): void
+	{
 		$me = new self($latte->getCompiler());
 
 		$me->addMacro('wizard', [$me, 'wizardStart'], [$me, 'wizardEnd']);
@@ -22,31 +24,38 @@ class Macros extends MacroSet {
 	}
 
 	/**
-	 * @param MacroNode $node
-	 * @param PhpWriter $writer
-	 * @return string
-	 * @throws CompileException
+	 * @throws Exception
 	 */
-	public function wizardStart(MacroNode $node, PhpWriter $writer): string {
+	public static function createFacade(IComponent $component): Facade
+	{
+		if (!$component instanceof IWizard) {
+			throw new Exception('Wizard must be instance of ' . IWizard::class);
+		}
+
+		return new Facade($component);
+	}
+
+	public function wizardStart(MacroNode $node, PhpWriter $writer): string
+	{
 		$words = $node->tokenizer->fetchWords();
 		if (!$words) {
 			throw new CompileException('Missing control name in {wizard}');
 		}
 		$name = $writer->formatWord($words[0]);
 
-		return ($name[0] === '$' ? "if (is_object($name)) \$_tmp = $name; else " : '')
-		. '$_tmp = $_control->getComponent(' . $name . '); '
-		. 'if (!$_tmp instanceof WebChemistry\Forms\Controls\IWizard) throw new \Exception(\'Wizard must be instance of WebChemistry\Forms\Controls\IWizard\');'
-		. '$wizard = new WebChemistry\Forms\Controls\Wizard\Facade($_tmp);';
+		$componentGetter = '$this->global->uiControl->getComponent(' . $name . ')';
+		// variable
+		if ($name[0] === '$') {
+			$wizard = sprintf('is_object(%s) ? %s : %s', $name, $name, $componentGetter);
+		} else {
+			$wizard = $componentGetter;
+		}
+
+		return sprintf('$wizard = %s::createFacade(%s);', static::class, $wizard);
 	}
 
-	/**
-	 * @param MacroNode $node
-	 * @param PhpWriter $writer
-	 * @return string
-	 * @throws CompileException
-	 */
-	public function stepStart(MacroNode $node, PhpWriter $writer): string {
+	public function stepStart(MacroNode $node, PhpWriter $writer): string
+	{
 		$word = $node->tokenizer->fetchWord();
 		if (!is_numeric($word) && !in_array($word, ['success', '"success"', "'success'"])) {
 			throw new CompileException('First parameter in {step} must be a numeric.');
@@ -59,6 +68,8 @@ class Macros extends MacroSet {
 		return 'if ($wizard->getCurrentStep() === ' . $word . ' && !$wizard->isSuccess()) { $wizardForm = $form = $wizard->getCurrentComponent(); ';
 	}
 
-	public function wizardEnd() {}
+	public function wizardEnd(): void
+	{
+	}
 
 }

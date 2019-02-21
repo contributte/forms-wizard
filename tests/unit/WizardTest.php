@@ -1,31 +1,36 @@
 <?php
 
+use Nette\Forms\Form as NetteForms;
+use Nette\Http\Request;
+use Nette\Http\Response;
+use Nette\Http\Session;
+use Nette\Http\UrlScript;
 use WebChemistry\Testing\TUnitTest;
 
-class WizardTest extends \Codeception\TestCase\Test {
+class WizardTest extends \Codeception\TestCase\Test
+{
 
 	use TUnitTest;
 
-	/** @var \WebChemistry\Forms\Controls\Wizard */
+	/** @var \Contributte\FormWizard\Wizard */
 	protected $wizard;
 
-	protected function _before() {
-		$session = new \Nette\Http\Session(
-			new \Nette\Http\Request(new \Nette\Http\UrlScript()), new \Nette\Http\Response()
+	protected function _before()
+	{
+		$session = new Session(
+			new Request(new UrlScript()), new Response()
 		);
 		$session->start();
-		$this->wizard = new Wizard($session);
 
-		$this->services->presenter->setMapping([
-			'*' => '*Presenter',
-		]);
+		$this->wizard = new Wizard($session);
 	}
 
-	public function testSteps() {
+	public function testSteps()
+	{
 		$wizard = $this->wizard;
 		$form = $this->wizard->create();
 
-		$this->assertInstanceOf('Nette\Forms\Form', $form);
+		$this->assertInstanceOf(NetteForms::class, $form);
 		$this->assertSame('step1', $form->getName());
 
 		$this->assertSame(1, $wizard->getCurrentStep());
@@ -38,8 +43,9 @@ class WizardTest extends \Codeception\TestCase\Test {
 		$this->assertSame(1, $wizard->getCurrentStep());
 	}
 
-	public function testInvalidSubmit() {
-		$hierarchy = $this->services->hierarchy->createHierarchy('Wizard');
+	public function testInvalidSubmit()
+	{
+		$hierarchy = $this->services->hierarchy->createHierarchy(WizardPresenter::class);
 
 		$response = $hierarchy->getControl('wizard')
 			->getForm('step1')
@@ -48,10 +54,12 @@ class WizardTest extends \Codeception\TestCase\Test {
 			])
 			->send();
 
-
 		/** @var Wizard $wizard */
 		$wizard = $response->getForm()->getParent();
-		$this->assertStringEqualsFile(__DIR__ . '/expected/start.expected', $response->toString());
+
+		$dom = $response->toDomQuery();
+
+		$this->assertDomHas($dom, '#frm-wizard-step1');
 
 		$this->assertSame(1, $wizard->getCurrentStep());
 		$this->assertSame(0, Wizard::$called);
@@ -59,8 +67,9 @@ class WizardTest extends \Codeception\TestCase\Test {
 		$this->assertSame(1, $wizard->getLastStep());
 	}
 
-	public function testSubmit() {
-		$hierarchy = $this->services->hierarchy->createHierarchy('Wizard');
+	public function testSubmit()
+	{
+		$hierarchy = $this->services->hierarchy->createHierarchy(WizardPresenter::class);
 
 		$response = $hierarchy->getControl('wizard')
 			->getForm('step1')
@@ -72,19 +81,21 @@ class WizardTest extends \Codeception\TestCase\Test {
 		/** @var Wizard $wizard */
 		$wizard = $response->getForm()->getParent();
 
-		$this->assertStringEqualsFile(__DIR__ . '/expected/step2.expected', $response->toString());
+		$this->assertDomHas($response->toDomQuery(), '#frm-wizard-step2');
+
 		$this->assertFalse($wizard->isSuccess());
 		$this->assertSame(2, $wizard->getCurrentStep());
 		$this->assertSame($wizard->create(2), $wizard->create());
 		$this->assertSame(2, $wizard->getLastStep());
 		$this->assertSame(0, Wizard::$called);
-		$this->assertSame(array(
-			'name' => 'foo'
-		), $wizard->getValues(TRUE));
+		$this->assertSame([
+			'name' => 'foo',
+		], $wizard->getValues(true));
 	}
 
-	public function testSubmitBack() {
-		$hierarchy = $this->services->hierarchy->createHierarchy('Wizard');
+	public function testSubmitBack()
+	{
+		$hierarchy = $this->services->hierarchy->createHierarchy(WizardPresenter::class);
 
 		// Submit step1
 		$hierarchy->getControl('wizard')
@@ -97,7 +108,7 @@ class WizardTest extends \Codeception\TestCase\Test {
 		$hierarchy->cleanup();
 
 		// Checks if current form is step2
-		$this->assertStringEqualsFile(__DIR__ . '/expected/step2.expected', $hierarchy->send()->toString());
+		$this->assertDomHas($hierarchy->send()->toDomQuery(), '#frm-wizard-step2');
 
 		$hierarchy->cleanup();
 
@@ -111,8 +122,9 @@ class WizardTest extends \Codeception\TestCase\Test {
 		$this->assertTrue($response->toDomQuery()->has('#frm-wizard-step1-name'));
 	}
 
-	public function testFinish() {
-		$hierarchy = $this->services->hierarchy->createHierarchy('Wizard');
+	public function testFinish()
+	{
+		$hierarchy = $this->services->hierarchy->createHierarchy(WizardPresenter::class);
 
 		// Submit step1
 		$hierarchy->getControl('wizard')
@@ -134,15 +146,15 @@ class WizardTest extends \Codeception\TestCase\Test {
 
 		/** @var Wizard $wizard */
 		$wizard = $response->getForm()->getParent();
-		$this->assertStringEqualsFile(__DIR__ . '/expected/finish.expected', $response->toString());
+		$this->assertDomHas($response->toDomQuery(), '#success');
 
 		$this->assertTrue($wizard->isSuccess());
 		$this->assertSame(1, Wizard::$called);
-		$this->assertSame(array(), $wizard->getValues(TRUE));
-		$this->assertSame(array(
+		$this->assertSame([], $wizard->getValues(true));
+		$this->assertSame([
 			'name' => 'Name',
-			'email' => 'email'
-		), Wizard::$values);
+			'email' => 'email',
+		], Wizard::$values);
 		$this->assertSame(1, $wizard->getCurrentStep());
 		$this->assertSame(1, $wizard->getLastStep());
 	}

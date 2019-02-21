@@ -1,22 +1,23 @@
-<?php declare(strict_types=1);
+<?php declare(strict_types = 1);
 
-namespace WebChemistry\Forms\Controls\DI;
+namespace Contributte\FormWizard\DI;
 
+use Contributte\FormWizard\Latte\WizardMacros;
 use Nette\DI\CompilerExtension;
-use WebChemistry\Forms\Controls\Wizard\Macros;
+use Nette\DI\Definitions\FactoryDefinition;
 
-class WizardExtension extends CompilerExtension {
+final class WizardExtension extends CompilerExtension
+{
 
-	/**
-	 * Adjusts DI container before is compiled to PHP class. Intended to be overridden by descendant.
-	 *
-	 * @return void
-	 */
-	public function beforeCompile(): void {
+	public function beforeCompile(): void
+	{
 		$builder = $this->getContainerBuilder();
 
-		$builder->getDefinition('nette.latteFactory')
-			->addSetup(Macros::class . '::install(?)', array('@self'));
+		/** @var FactoryDefinition $latte */
+		$latte = $builder->getDefinition('nette.latteFactory');
+
+		$latte->getResultDefinition()
+			->addSetup(WizardMacros::class . '::install(?)', ['@self']);
 	}
 
 }

@@ -1,22 +1,55 @@
 {
-  "name": "webchemistry/forms-wizard",
-  "type": "library",
-  "description": "Wizard component for nette/forms",
-  "keywords": ["nette", "webchemistry", "forms", "wizard"],
-  "require": {
-    "php": ">=7.1",
-    "nette/forms": "^2.3",
-    "nette/http": "^2.3"
-  },
-  "require-dev": {
-    "webchemistry/testing-helpers": "dev-master",
-    "latte/latte": "^2.3",
-    "codeception/codeception": "^2.3",
-    "nette/application": "^2.3",
-    "phpstan/phpstan": "^0.7.0",
-    "phpstan/phpstan-nette": "^0.7.0"
-  },
-  "autoload": {
-    "classmap": ["src/"]
-  }
+	"name": "contributte/forms-wizard",
+	"type": "library",
+	"description": "Wizard component for nette/forms",
+	"keywords": [
+		"nette",
+		"contributte",
+		"forms",
+		"wizard"
+	],
+	"require": {
+		"php": ">=7.1",
+		"nette/forms": "^3.0",
+		"nette/http": "^3.0"
+	},
+	"require-dev": {
+		"ninjify/qa": "^0.8.0",
+		"ninjify/nunjuck": "^0.2.0",
+		"webchemistry/testing-helpers": "~2.0.0",
+		"latte/latte": "^3.0",
+		"codeception/codeception": "^2.5.1",
+		"nette/application": "^3.0",
+		"nette/di": "^3.0"
+	},
+	"minimum-stability": "RC",
+	"autoload": {
+		"psr-4": {
+			"Contributte\\FormWizard\\": ["src/"]
+		}
+	},
+	"autoload-dev": {
+		"classmap": [
+			"tests/includes"
+		]
+	},
+	"scripts": {
+		"qa": [
+			"linter src tests",
+			"codesniffer src tests"
+		],
+		"tests": [
+			"vendor/bin/codecept run"
+		],
+		"phpstan-install": [
+			"mkdir -p temp/phpstan",
+			"composer require -d temp/phpstan phpstan/phpstan:^0.10",
+			"composer require -d temp/phpstan phpstan/phpstan-deprecation-rules:^0.10",
+			"composer require -d temp/phpstan phpstan/phpstan-nette:^0.10",
+			"composer require -d temp/phpstan phpstan/phpstan-strict-rules:^0.10"
+		],
+		"phpstan": [
+			"temp/phpstan/vendor/bin/phpstan analyse -l max src"
+		]
+	}
 }

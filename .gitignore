@@ -1,10 +1,11 @@
-## ide
-.idea
+# IDE
+/.idea
 
-## composer
-vendor
-composer.lock
+# Composer
+/vendor
+/composer.lock
 
-## tests
-tests/_output
-tests/_support
+# Tests
+/tests/_output
+/tests/_support
+/coverage.xml

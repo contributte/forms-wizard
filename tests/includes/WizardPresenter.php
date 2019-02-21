@@ -2,12 +2,15 @@
 
 use Nette\Application\UI\Presenter;
 use Nette\Http\Session;
+use Contributte\FormWizard\Latte\WizardMacros;
 
-class WizardPresenter extends Presenter {
+class WizardPresenter extends Presenter
+{
 
 	private $session;
 
-	public function getCustomSession() {
+	public function getCustomSession()
+	{
 		if (!$this->session) {
 			$this->session = new Session($this->getHttpRequest(), $this->getHttpResponse());
 		}
@@ -15,31 +18,27 @@ class WizardPresenter extends Presenter {
 		return $this->session;
 	}
 
-	protected function createTemplate() {
+	protected function createTemplate(): \Nette\Application\UI\ITemplate
+	{
 		$template = parent::createTemplate();
 
-		\WebChemistry\Forms\Controls\Wizard\Macros::install($template->getLatte());
+		WizardMacros::install($template->getLatte());
 
 		return $template;
 	}
 
-	public function renderDefault() {
+	public function renderDefault()
+	{
 		$this->template->setFile(__DIR__ . '/template.latte');
 	}
 
-	/**
-	 * Generates URL to presenter, action or signal.
-	 *
-	 * @param  string   destination in format "[//] [[[module:]presenter:]action | signal! | this] [#fragment]"
-	 * @param  array|mixed
-	 * @return string
-	 * @throws InvalidLinkException
-	 */
-	public function link($destination, $args = array()) {
+	public function link(string $destination, $args = []): string
+	{
 		return 'link';
 	}
 
-	protected function createComponentWizard() {
-		return new \Wizard($this->getCustomSession());
+	protected function createComponentWizard()
+	{
+		return new Wizard($this->getCustomSession());
 	}
 }

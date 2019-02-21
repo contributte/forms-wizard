@@ -1,90 +1,84 @@
 <?php declare(strict_types = 1);
 
-namespace WebChemistry\Forms\Controls;
+namespace Contributte\FormWizard;
 
+use DateTime;
+use Nette\Application\UI\Form;
 use Nette\ComponentModel\Container;
 use Nette\ComponentModel\IComponent;
+use Nette\Forms;
 use Nette\Forms\Controls\SubmitButton;
 use Nette\Http\Session;
-use Nette\Application\UI\Form;
 use Nette\Http\SessionSection;
 use Nette\UnexpectedValueException;
 use Nette\Utils\ArrayHash;
-use WebChemistry\Forms\Controls\Wizard\IFormFactory;
-use Nette\Forms;
+use ReflectionMethod;
 
-class Wizard extends Container implements IWizard {
+class Wizard extends Container implements IWizard
+{
 
 	private const CURRENT_STEP = 'currentStep';
+
 	private const VALUES = 'values';
+
 	private const LAST_STEP = 'lastStep';
 
 	/** @var Session */
 	private $session;
 
-	/** @var \DateTime|string|int */
+	/** @var DateTime|string|int */
 	protected $expiration = '+ 20 minutes';
 
-	/** @var array */
+	/** @var callable[] */
 	public $onSuccess = [];
 
 	/** @var IFormFactory */
 	private $factory;
 
 	/** @var bool */
-	private $isSuccess = FALSE;
+	private $isSuccess = false;
 
-	/**
-	 * @param Session $session
-	 */
-	public function __construct(Session $session) {
-		parent::__construct();
-
+	public function __construct(Session $session)
+	{
 		$this->session = $session;
 	}
 
-	/**
-	 * @param IFormFactory $factory
-	 * @return IWizard
-	 */
-	public function setFactory(IFormFactory $factory): IWizard {
+	public function setFactory(IFormFactory $factory): IWizard
+	{
 		$this->factory = $factory;
 
 		return $this;
 	}
 
-	protected function finish(): void {}
+	protected function finish(): void
+	{
+	}
 
-	/**
-	 * @return bool
-	 */
-	public function isSuccess(): bool {
+	public function isSuccess(): bool
+	{
 		return $this->isSuccess;
 	}
 
-	/**
-	 * @return SessionSection
-	 */
-	protected function getSection(): SessionSection {
+	protected function getSection(): SessionSection
+	{
 		return $this->session->getSection('wizard' . $this->getName())->setExpiration($this->expiration);
 	}
 
-	private function resetSection(): void {
+	private function resetSection(): void
+	{
 		$this->getSection()->remove();
 	}
 
-	/**
-	 * @return int
-	 */
-	public function getCurrentStep(): int {
-		return $this->getSection()[self::CURRENT_STEP]? : 1;
+	public function getCurrentStep(): int
+	{
+		return $this->getSection()[self::CURRENT_STEP] ?: 1;
 	}
 
 	/**
-	 * @param bool $asArray
-	 * @return array|ArrayHash
+	 * @return mixed[]|ArrayHash
 	 */
-	public function getValues(bool $asArray = FALSE) {
+	public function getValues(bool $asArray = false)
+	{
 		if ($asArray) {
 			return (array) $this->getSection()[self::VALUES];
 		} else {
@@ -92,111 +86,97 @@ class Wizard extends Container implements IWizard {
 		}
 	}
 
-	/**
-	 * @return int
-	 */
-	public function getLastStep(): int {
-		return $this->getSection()[self::LAST_STEP] ? : 1;
+	public function getLastStep(): int
+	{
+		return $this->getSection()[self::LAST_STEP] ?: 1;
 	}
 
-	/**
-	 * @param int $step
-	 * @return IWizard
-	 */
-	public function setStep(int $step): IWizard {
-		if ($this->getLastStep() >= $step && $step > 0 && $this->getComponent("step" . $step, FALSE)) {
+	public function setStep(int $step): IWizard
+	{
+		if ($this->getLastStep() >= $step && $step > 0 && $this->getComponent('step' . $step, false)) {
 			$this->getSection()[self::CURRENT_STEP] = $step;
 		}
 
 		return $this;
 	}
 
-	/**
-	 * @return Form
-	 */
-	protected function createForm(): Form {
+	protected function createForm(): Form
+	{
 		return $this->factory ? $this->factory->create() : new Form();
 	}
 
-	/**
-	 * @param SubmitButton $button
-	 */
-	public function submitStep(SubmitButton $button): void {
+	public function submitStep(SubmitButton $button): void
+	{
 		$form = $button->getForm();
 		$submitName = $button->getName();
 
 		if ($submitName === self::PREV_SUBMIT_NAME) {
 			$currentStep = $this->getCurrentStep();
 			$this->getSection()[self::CURRENT_STEP] = $currentStep - 1;
+		} else {
+			if ($submitName === self::NEXT_SUBMIT_NAME && $form->isValid()) {
+				$this->merge($form->getValues(true));
+				$this->getSection()[self::LAST_STEP] = $this->getSection()[self::CURRENT_STEP] = $this->getCurrentStep() + 1;
+			} else {
+				if ($submitName === self::FINISH_SUBMIT_NAME && $form->isValid() && $this->getSection()[self::VALUES] !== null) {
+					$this->merge($form->getValues(true));
 
-		} else if ($submitName === self::NEXT_SUBMIT_NAME && $form->isValid()) {
-			$this->merge($form->getValues(TRUE));
-			$this->getSection()[self::LAST_STEP] = $this->getSection()[self::CURRENT_STEP] = $this->getCurrentStep() + 1;
-
-		} else if ($submitName === self::FINISH_SUBMIT_NAME && $form->isValid() && $this->getSection()[self::VALUES] !== NULL) {
-			$this->merge($form->getValues(TRUE));
-
-			$this->isSuccess = TRUE;
-			$this->finish();
-			foreach ($this->onSuccess as $callback) {
-				$callback($this);
+					$this->isSuccess = true;
+					$this->finish();
+					foreach ($this->onSuccess as $callback) {
+						$callback($this);
+					}
+					$this->resetSection();
+				}
 			}
-			$this->resetSection();
 		}
 	}
 
 	/**
-	 * @param array $array
+	 * @param mixed[] $array
 	 */
-	private function merge(array $array): void {
+	private function merge(array $array): void
+	{
 		$this->getSection()[self::VALUES] = array_merge((array) $this->getSection()[self::VALUES], $array);
 	}
 
-	public function render() {
+	public function render(): void
+	{
 		$this->create()->render();
 	}
 
-	/**
-	 * @param string $step
-	 * @return Form
-	 */
-	public function create(string $step = NULL): Form {
+	public function create(?string $step = null): Form
+	{
 		/** @var Form $form */
-		$form = $this->getComponent('step' . ($step !== NULL ? $step : $this->getCurrentStep()));
-		$form->setValues($this->getValues(TRUE));
+		$form = $this->getComponent('step' . ($step ?? $this->getCurrentStep()));
+		$form->setValues($this->getValues(true));
 
 		return $form;
 	}
 
-	/**
-	 * Control factory. Delegates the creation of components to a createComponent<Name> method.
-	 *
-	 * @param string $name component name
-	 * @return IComponent|NULL the created component (optionally)
-	 */
-	protected function createComponent($name): ?IComponent {
+	protected function createComponent(string $name): ?IComponent
+	{
 		$ucname = ucfirst($name);
 		$method = 'create' . $ucname;
-		if ($ucname !== $name && method_exists($this, $method) && (new \ReflectionMethod($this, $method))->getName() === $method) {
+		if ($ucname !== $name && method_exists($this, $method) && (new ReflectionMethod($this, $method))->getName() === $method) {
 			$component = $this->$method($name);
 			if (!$component instanceof Forms\Form && !isset($this->components[$name])) {
-				$class = get_class($this);
-				throw new UnexpectedValueException("Method $class::$method() did not return or create Nette\\Forms\\Form.");
+				throw new UnexpectedValueException(
+					sprintf('Method %s::%s() did not return or create %s.', static::class, $method, Form::class)
+				);
 			}
 			$this->applyCallbacksToButtons($component);
 
 			return $component;
 		}
 
-		return NULL;
+		return null;
 	}
 
-	/**
-	 * @param Forms\Form $form
-	 */
-	private function applyCallbacksToButtons(Forms\Form $form): void {
+	private function applyCallbacksToButtons(Forms\Form $form): void
+	{
 		/** @var SubmitButton $control */
-		foreach ($form->getComponents(FALSE, SubmitButton::class) as $control) {
+		foreach ($form->getComponents(false, SubmitButton::class) as $control) {
 			if (!in_array($control->getName(), [self::FINISH_SUBMIT_NAME, self::NEXT_SUBMIT_NAME, self::PREV_SUBMIT_NAME])) {
 				continue;
 			}
@@ -204,7 +184,7 @@ class Wizard extends Container implements IWizard {
 			$control->onClick[] = [$this, 'submitStep'];
 			$control->onInvalidClick[] = [$this, 'submitStep'];
 			if ($control->getName() === self::PREV_SUBMIT_NAME) {
-				$control->setValidationScope(FALSE);
+				$control->setValidationScope([]);
 			}
 		}
 	}

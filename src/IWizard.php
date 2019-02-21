@@ -1,68 +1,36 @@
 <?php declare(strict_types = 1);
 
-namespace WebChemistry\Forms\Controls;
+namespace Contributte\FormWizard;
 
-use Nette\ComponentModel\IComponent;
 use Nette\Application\UI\Form;
 use Nette\Utils\ArrayHash;
-use WebChemistry\Forms\Controls\Wizard\IFormFactory;
 
-interface IWizard {
+interface IWizard
+{
 
-	const PREV_SUBMIT_NAME = 'prev';
-	const NEXT_SUBMIT_NAME = 'next';
-	const FINISH_SUBMIT_NAME = 'finish';
+	public const PREV_SUBMIT_NAME = 'prev';
 
-	/**
-	 * @return IWizard
-	 */
+	public const NEXT_SUBMIT_NAME = 'next';
+
+	public const FINISH_SUBMIT_NAME = 'finish';
+
 	public function setFactory(IFormFactory $factory): IWizard;
 
-	/**
-	 * @return int
-	 */
 	public function getCurrentStep(): int;
 
-	/**
-	 * @return int
-	 */
 	public function getLastStep(): int;
 
-	/**
-	 * @param int $step
-	 * @return IWizard
-	 */
 	public function setStep(int $step): IWizard;
 
-	/**
-	 * Returns component specified by name or path.
-	 * @param $name string
-	 * @param $need bool throw exception if component doesn't exist?
-	 * @return IComponent|NULL
-	 */
-	public function getComponent($name, $need = TRUE);
+	public function render(): void;
 
-	/**
-	 * @return mixed
-	 */
-	public function render();
+	public function create(?string $step = null): Form;
 
-
-	/**
-	 * @param string $step
-	 * @return Form
-	 */
-	public function create(string $step = NULL): Form;
-
-	/**
-	 * @return bool
-	 */
 	public function isSuccess(): bool;
 
 	/**
-	 * @param bool $asArray
-	 * @return array|ArrayHash
+	 * @return mixed[]|ArrayHash
 	 */
-	public function getValues(bool $asArray = FALSE);
+	public function getValues(bool $asArray = false);
 
 }

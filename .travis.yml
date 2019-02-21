@@ -1,21 +1,36 @@
 language: php
-
-os:
-  - linux
-
 php:
   - 7.1
+  - 7.2
+  - 7.3
 
-matrix:
-  include:
-    - php: 7.1
-      env: PHPSTAN=1
+before_install:
+  # Turn off XDebug
+  - phpenv config-rm xdebug.ini || return 0
 
 install:
-    - composer self-update
-    - composer install
-
+  # Composer
+  - travis_retry composer install --no-progress --prefer-dist
 script:
-  - php vendor/codeception/codeception/codecept run
-  - if [ "$PHPSTAN" = "1" ]; then vendor/bin/phpstan analyse src --level=4 --ansi --no-progress -c phpstan.neon; fi
+  # Tests
+  - composer run-script tests
 
+jobs:
+  include:
+    - env: title="Lowest Dependencies 7.1"
+      php: 7.1
+      install:
+        - travis_retry composer update --no-progress --prefer-dist --prefer-lowest
+      script:
+        - composer run-script tests
+
+    - stage: Quality Assurance
+      php: 7.1
+      script:
+        - composer run-script qa
+
+sudo: false
+
+cache:
+  directories:
+    - $HOME/.composer/cache
