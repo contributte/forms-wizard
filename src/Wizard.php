@@ -38,6 +38,9 @@ class Wizard extends Container implements IWizard
 	/** @var bool */
 	private $isSuccess = false;
 
+	/** @var mixed[] */
+	private $finalValues = [];
+
 	public function __construct(Session $session)
 	{
 		$this->session = $session;
@@ -66,6 +69,8 @@ class Wizard extends Container implements IWizard
 
 	private function resetSection(): void
 	{
+		$this->finalValues = $this->getValues(true);
+
 		$this->getSection()->remove();
 	}
 
@@ -79,11 +84,12 @@ class Wizard extends Container implements IWizard
 	 */
 	public function getValues(bool $asArray = false)
 	{
-		if ($asArray) {
-			return (array) $this->getSection()[self::VALUES];
-		} else {
-			return ArrayHash::from((array) $this->getSection()[self::VALUES]);
+		$values = $this->finalValues;
+		if (!$this->finalValues) {
+			$values = (array) $this->getSection()[self::VALUES];
 		}
+
+		return $asArray ? $values : ArrayHash::from($values);
 	}
 
 	public function getLastStep(): int

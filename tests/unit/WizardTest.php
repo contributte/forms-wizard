@@ -150,7 +150,10 @@ class WizardTest extends \Codeception\TestCase\Test
 
 		$this->assertTrue($wizard->isSuccess());
 		$this->assertSame(1, Wizard::$called);
-		$this->assertSame([], $wizard->getValues(true));
+		$this->assertSame([
+			'name' => 'Name',
+			'email' => 'email',
+		], $wizard->getValues(true));
 		$this->assertSame([
 			'name' => 'Name',
 			'email' => 'email',
