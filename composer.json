@@ -51,5 +51,10 @@
 		"phpstan": [
 			"temp/phpstan/vendor/bin/phpstan analyse -l max src"
 		]
+	},
+	"extra": {
+		"branch-alias": {
+			"dev-master": "2.1.x-dev"
+		}
 	}
 }
