@@ -3,7 +3,9 @@
 namespace Contributte\FormWizard;
 
 use Contributte\FormWizard\Session\WizardSessionSection;
+use Contributte\FormWizard\Steps\StepCounter;
 use DateTime;
+use LogicException;
 use Nette\Application\UI\Form;
 use Nette\ComponentModel\Container;
 use Nette\ComponentModel\IComponent;
@@ -22,6 +24,9 @@ class Wizard extends Container implements IWizard
 
 	/** @var WizardSessionSection|null */
 	private $section;
+
+	/** @var StepCounter|null */
+	private $stepCounter;
 
 	/** @var DateTime|string|int */
 	protected $expiration = '+ 20 minutes';
@@ -68,14 +73,28 @@ class Wizard extends Container implements IWizard
 		return $this->section;
 	}
 
-	private function resetSection(): void
+	protected function getStepCounter(): StepCounter
 	{
-		$this->getSection()->reset();
+		if (!$this->stepCounter) {
+			for ($counter = 1; $counter < 1000; $counter++) {
+				if (!method_exists($this, 'createStep' . $counter) || !$this->getComponent('step' . $counter, false)) {
+					$counter--;
+					break;
+				}
+			}
+			if ($counter < 1) {
+				throw new LogicException('Wizard must have at least 1 step');
+			}
+
+			$this->stepCounter = new StepCounter($this->getSection(), $counter);
+		}
+
+		return $this->stepCounter;
 	}
 
 	public function getCurrentStep(): int
 	{
-		return $this->getSection()->getCurrentStep() ?: 1;
+		return $this->getStepCounter()->getCurrentStep();
 	}
 
 	/**
@@ -90,14 +109,12 @@ class Wizard extends Container implements IWizard
 
 	public function getLastStep(): int
 	{
-		return $this->getSection()->getLastStep() ?: 1;
+		return $this->getStepCounter()->getLastStep();
 	}
 
 	public function setStep(int $step): IWizard
 	{
-		if ($this->getLastStep() >= $step && $step > 0 && $this->getComponent('step' . $step, false)) {
-			$this->getSection()->setCurrentStep($step);
-		}
+		$this->getStepCounter()->setCurrentStep($step);
 
 		return $this;
 	}
@@ -111,27 +128,24 @@ class Wizard extends Container implements IWizard
 	{
 		$form = $button->getForm();
 		$submitName = $button->getName();
-		$currentStep = $this->getCurrentStep();
 
 		if ($submitName === self::PREV_SUBMIT_NAME) {
-			$this->getSection()->setCurrentStep($currentStep - 1);
+			$this->getStepCounter()->previousStep();
 
 		} else {
-			$this->getSection()->setStepValues($currentStep, $form->getValues('array'));
+			$this->getSection()->setStepValues($this->getCurrentStep(), $form->getValues('array'));
 
 			if ($submitName === self::NEXT_SUBMIT_NAME && $form->isValid()) {
-				$step = $currentStep + 1;
-				$this->getSection()->setCurrentStep($step);
-				$this->getSection()->setLastStep($step);
+				$this->getStepCounter()->nextStep();
 
 			} else {
-				if ($submitName === self::FINISH_SUBMIT_NAME && $form->isValid() && $this->getSection()->getValues() !== null) {
+				if ($submitName === self::FINISH_SUBMIT_NAME && $form->isValid() && $this->getSection()->getRawValues() !== null) {
 					$this->isSuccess = true;
 					$this->finish();
 					foreach ($this->onSuccess as $callback) {
 						$callback($this);
 					}
-					$this->resetSection();
+					$this->getSection()->reset();
 				}
 			}
 		}

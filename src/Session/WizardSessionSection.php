@@ -76,9 +76,9 @@ class WizardSessionSection
 	}
 
 	/**
-	 * @return mixed[]
+	 * @return mixed[]|null
 	 */
-	public function getRawValues(): array
+	public function getRawValues(): ?array
 	{
 		return $this->getSectionValue(self::VALUES);
 	}
