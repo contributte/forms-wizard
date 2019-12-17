@@ -136,8 +136,18 @@ class WizardTest extends \Codeception\TestCase\Test
 
 		$hierarchy->cleanup();
 
-		$response = $hierarchy->getControl('wizard')
+		// Submit step2
+		$hierarchy->getControl('wizard')
 			->getForm('step2')
+			->setValues([
+				'optional' => 'Optional',
+				Wizard::NEXT_SUBMIT_NAME => 'submit',
+			])->send();
+
+		$hierarchy->cleanup();
+
+		$response = $hierarchy->getControl('wizard')
+			->getForm('step3')
 			->setValues([
 				'void' => 'void',
 				'email' => 'email',
@@ -152,10 +162,12 @@ class WizardTest extends \Codeception\TestCase\Test
 		$this->assertSame(1, Wizard::$called);
 		$this->assertSame([
 			'name' => 'Name',
+			'optional' => 'Optional',
 			'email' => 'email',
 		], $wizard->getValues(true));
 		$this->assertSame([
 			'name' => 'Name',
+			'optional' => 'Optional',
 			'email' => 'email',
 		], Wizard::$values);
 		$this->assertSame(1, $wizard->getCurrentStep());
