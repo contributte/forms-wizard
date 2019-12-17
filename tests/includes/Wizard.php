@@ -26,10 +26,10 @@ class Wizard extends \Contributte\FormWizard\Wizard
 	{
 		$form = $this->createForm();
 
-		$form->addText('name', 'Uživatelské jméno')
+		$form->addText('name', 'Name')
 			->setRequired();
 
-		$form->addSubmit(self::NEXT_SUBMIT_NAME, 'Další');
+		$form->addSubmit(self::NEXT_SUBMIT_NAME, 'Next');
 
 		return $form;
 	}
@@ -38,11 +38,23 @@ class Wizard extends \Contributte\FormWizard\Wizard
 	{
 		$form = $this->createForm();
 
+		$form->addText('optional', 'Optional');
+
+		$form->addSubmit(self::PREV_SUBMIT_NAME, 'Prev');
+		$form->addSubmit(self::NEXT_SUBMIT_NAME, 'Next');
+
+		return $form;
+	}
+
+	protected function createStep3()
+	{
+		$form = $this->createForm();
+
 		$form->addText('email', 'Email')
 			->setRequired();
 
-		$form->addSubmit(self::PREV_SUBMIT_NAME, 'Zpět');
-		$form->addSubmit(self::FINISH_SUBMIT_NAME, 'Registrovat');
+		$form->addSubmit(self::PREV_SUBMIT_NAME, 'Prev');
+		$form->addSubmit(self::FINISH_SUBMIT_NAME, 'Register');
 
 		return $form;
 	}
