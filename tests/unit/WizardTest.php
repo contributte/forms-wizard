@@ -90,6 +90,7 @@ class WizardTest extends \Codeception\TestCase\Test
 		$this->assertSame(0, Wizard::$called);
 		$this->assertSame([
 			'name' => 'foo',
+			'skip' => false,
 		], $wizard->getValues(true));
 	}
 
@@ -162,16 +163,80 @@ class WizardTest extends \Codeception\TestCase\Test
 		$this->assertSame(1, Wizard::$called);
 		$this->assertSame([
 			'name' => 'Name',
+			'skip' => false,
 			'optional' => 'Optional',
 			'email' => 'email',
 		], $wizard->getValues(true));
 		$this->assertSame([
 			'name' => 'Name',
+			'skip' => false,
 			'optional' => 'Optional',
 			'email' => 'email',
 		], Wizard::$values);
 		$this->assertSame(1, $wizard->getCurrentStep());
 		$this->assertSame(1, $wizard->getLastStep());
+	}
+
+	public function testOptionalStep()
+	{
+		$hierarchy = $this->services->hierarchy->createHierarchy(WizardPresenter::class);
+
+		// Submit step1
+		$hierarchy->getControl('wizard')
+			->getForm('step1')
+			->setValues([
+				'name' => 'Name',
+				'skip' => '1',
+				Wizard::NEXT_SUBMIT_NAME => 'submit',
+			])->send();
+
+		$hierarchy->cleanup();
+
+		$response = $hierarchy->getControl('wizard')
+			->getForm('step3')
+			->setValues([
+				'void' => 'void',
+				'email' => 'email',
+				Wizard::FINISH_SUBMIT_NAME => 'submit',
+			])->send();
+
+		/** @var Wizard $wizard */
+		$wizard = $response->getForm()->getParent();
+		$this->assertDomHas($response->toDomQuery(), '#success');
+
+		$this->assertTrue($wizard->isSuccess());
+		$this->assertSame(1, Wizard::$called);
+		$this->assertSame([
+			'name' => 'Name',
+			'skip' => true,
+			'email' => 'email',
+		], $wizard->getValues(true));
+		$this->assertSame([
+			'name' => 'Name',
+			'skip' => true,
+			'email' => 'email',
+		], Wizard::$values);
+		$this->assertSame(1, $wizard->getCurrentStep());
+		$this->assertSame(1, $wizard->getLastStep());
+	}
+
+	public function testSkipAll()
+	{
+		$hierarchy = $this->services->hierarchy->createHierarchy(WizardPresenter::class);
+
+		$response = $hierarchy->getControl('wizard')
+			->getForm('step3')
+			->setValues([
+				'void' => 'void',
+				'email' => 'email',
+				Wizard::FINISH_SUBMIT_NAME => 'submit',
+			])->send();
+
+		/** @var Wizard $wizard */
+		$wizard = $response->getForm()->getParent();
+		$this->assertDomNotHas($response->toDomQuery(), '#success');
+
+		$this->assertFalse($wizard->isSuccess());
 	}
 
 }

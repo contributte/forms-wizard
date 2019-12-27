@@ -29,6 +29,13 @@ interface IWizard
 	public function isSuccess(): bool;
 
 	/**
+	 * @return bool[]
+	 */
+	public function getSteps(): array;
+
+	public function getTotalSteps(): int;
+
+	/**
 	 * @return mixed[]|ArrayHash
 	 */
 	public function getValues(bool $asArray = false);
