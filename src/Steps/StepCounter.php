@@ -14,12 +14,17 @@ final class StepCounter
 	private $section;
 
 	/** @var int */
-	private $maxSteps;
+	private $totalSteps;
 
-	public function __construct(WizardSessionSection $section, int $maxSteps)
+	public function __construct(WizardSessionSection $section, int $totalSteps)
 	{
 		$this->section = $section;
-		$this->maxSteps = $maxSteps;
+		$this->totalSteps = $totalSteps;
+	}
+
+	public function getTotalSteps(): int
+	{
+		return $this->totalSteps;
 	}
 
 	public function getCurrentStep(): int
@@ -60,12 +65,17 @@ final class StepCounter
 
 	public function previousStep(): void
 	{
-		$this->setCurrentStep($this->getCurrentStep() - 1);
+		$this->setCurrentStep($step = $this->getCurrentStep() - 1);
+	}
+
+	public function canFinish(): bool
+	{
+		return $this->section->getValues() && $this->getLastStep() === $this->totalSteps;
 	}
 
 	protected function minmax(int $value, int $min = 1, ?int $max = null): int
 	{
-		return min(max($value, $min), $max ?? $this->maxSteps);
+		return min(max($value, $min), $max ?? $this->totalSteps);
 	}
-	
+
 }
