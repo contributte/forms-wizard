@@ -63,22 +63,9 @@ class WizardSessionSection
 	}
 
 	/**
-	 * @return mixed[]
-	 */
-	public function getValues(): array
-	{
-		$result = [];
-		foreach ((array) $this->getSectionValue(self::VALUES) as $step => $values) {
-			$result = array_merge($result, $values);
-		}
-
-		return $result;
-	}
-
-	/**
 	 * @return mixed[]|null
 	 */
-	public function getRawValues(): ?array
+	public function getValues(): ?array
 	{
 		return $this->getSectionValue(self::VALUES);
 	}

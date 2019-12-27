@@ -5,10 +5,14 @@ namespace Contributte\FormWizard;
 use Contributte\FormWizard\Session\WizardSessionSection;
 use Contributte\FormWizard\Steps\StepCounter;
 use DateTime;
+use InvalidArgumentException;
 use LogicException;
+use Nette\Application\IPresenter;
 use Nette\Application\UI\Form;
+use Nette\Application\UI\Presenter;
 use Nette\ComponentModel\Container;
 use Nette\ComponentModel\IComponent;
+use Nette\ComponentModel\IContainer;
 use Nette\Forms;
 use Nette\Forms\Controls\SubmitButton;
 use Nette\Http\Session;
@@ -40,6 +44,15 @@ class Wizard extends Container implements IWizard
 	/** @var bool */
 	private $isSuccess = false;
 
+	/** @var IPresenter|null */
+	private $presenter;
+
+	/** @var bool */
+	private $startupCalled = false;
+
+	/** @var mixed[] */
+	private $stepsConditions = [];
+
 	public function __construct(Session $session)
 	{
 		$this->session = $session;
@@ -50,6 +63,25 @@ class Wizard extends Container implements IWizard
 		$this->factory = $factory;
 
 		return $this;
+	}
+
+	protected function skipStepIf(int $step, callable $callback): void
+	{
+		if ($step < 1) {
+			throw new InvalidArgumentException(sprintf('Step must be greater than 0, %d given', $step));
+		}
+		if ($step === 1) {
+			throw new InvalidArgumentException('Cannot skip first step');
+		}
+		if ($step === $this->getTotalSteps()) {
+			throw new InvalidArgumentException('Cannot skip last step');
+		}
+
+		$this->stepsConditions[$step][] = $callback;
+	}
+
+	protected function startup(): void
+	{
 	}
 
 	protected function finish(): void
@@ -73,11 +105,11 @@ class Wizard extends Container implements IWizard
 		return $this->section;
 	}
 
-	protected function getStepCounter(): StepCounter
+	public function getStepCounter(): StepCounter
 	{
 		if (!$this->stepCounter) {
 			for ($counter = 1; $counter < 1000; $counter++) {
-				if (!method_exists($this, 'createStep' . $counter) || !$this->getComponent('step' . $counter, false)) {
+				if (!method_exists($this, 'createStep' . $counter) && !$this->getComponent('step' . $counter, false)) {
 					$counter--;
 					break;
 				}
@@ -97,14 +129,60 @@ class Wizard extends Container implements IWizard
 		return $this->getStepCounter()->getCurrentStep();
 	}
 
+	public function isStepSkipped(int $step): bool
+	{
+		$values = $this->getRawValues();
+		foreach ($this->stepsConditions[$step] ?? [] as $callback) {
+			if ($callback($values)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * @return bool[]
+	 */
+	public function getSteps(): array
+	{
+		$steps = [];
+
+		for ($step = 1; $step <= $this->getStepCounter()->getTotalSteps(); $step++) {
+			$steps[$step] = !$this->isStepSkipped($step);
+		}
+
+		return $steps;
+	}
+
+	public function getTotalSteps(): int
+	{
+		return $this->getStepCounter()->getTotalSteps();
+	}
+
 	/**
 	 * @return mixed[]|ArrayHash
 	 */
 	public function getValues(bool $asArray = false)
 	{
-		$values = $this->getSection()->getValues();
+		$values = [];
+		foreach ($this->getRawValues() as $step => $value) {
+			if ($this->isStepSkipped($step)) {
+				continue;
+			}
+
+			$values = array_merge($values, $value);
+		}
 
 		return $asArray ? $values : ArrayHash::from($values);
+	}
+
+	/**
+	 * @return mixed[]
+	 */
+	public function getRawValues(): array
+	{
+		return (array) $this->getSection()->getValues();
 	}
 
 	public function getLastStep(): int
@@ -114,7 +192,9 @@ class Wizard extends Container implements IWizard
 
 	public function setStep(int $step): IWizard
 	{
-		$this->getStepCounter()->setCurrentStep($step);
+		if (!$this->isStepSkipped($step)) {
+			$this->getStepCounter()->setCurrentStep($step);
+		}
 
 		return $this;
 	}
@@ -128,25 +208,33 @@ class Wizard extends Container implements IWizard
 	{
 		$form = $button->getForm();
 		$submitName = $button->getName();
+		$step = $this->extractStepFromName($form->getName());
+
+		if (!$step || $step !== $this->getCurrentStep()) {
+			return;
+		}
 
 		if ($submitName === self::PREV_SUBMIT_NAME) {
-			$this->getStepCounter()->previousStep();
+			do {
+				$this->getStepCounter()->previousStep();
+			} while ($this->isStepSkipped($this->getCurrentStep()));
 
-		} else {
+		} elseif ($form->isValid()) {
 			$this->getSection()->setStepValues($this->getCurrentStep(), $form->getValues('array'));
 
-			if ($submitName === self::NEXT_SUBMIT_NAME && $form->isValid()) {
-				$this->getStepCounter()->nextStep();
+			if ($submitName === self::NEXT_SUBMIT_NAME) {
+				do {
+					$this->getStepCounter()->nextStep();
+				} while ($this->isStepSkipped($this->getCurrentStep()));
 
-			} else {
-				if ($submitName === self::FINISH_SUBMIT_NAME && $form->isValid() && $this->getSection()->getRawValues() !== null) {
-					$this->isSuccess = true;
-					$this->finish();
-					foreach ($this->onSuccess as $callback) {
-						$callback($this);
-					}
-					$this->getSection()->reset();
+			} elseif ($submitName === self::FINISH_SUBMIT_NAME && $this->getStepCounter()->canFinish()) {
+				$this->isSuccess = true;
+				$this->finish();
+				foreach ($this->onSuccess as $callback) {
+					$callback($this);
 				}
+				$this->getSection()->reset();
+
 			}
 		}
 	}
@@ -166,23 +254,50 @@ class Wizard extends Container implements IWizard
 		return $form;
 	}
 
-	protected function createComponent(string $name): ?IComponent
+	protected function extractStepFromName(string $name): ?int
 	{
-		$ucname = ucfirst($name);
-		$method = 'create' . $ucname;
-		if ($ucname !== $name && method_exists($this, $method) && (new ReflectionMethod($this, $method))->getName() === $method) {
-			$component = $this->$method($name);
-			if (!$component instanceof Forms\Form && !isset($this->components[$name])) {
+		if (!preg_match('#^step(\d+)$#', $name, $matches)) {
+			return null;
+		}
+
+		return (int) $matches[1];
+	}
+
+	/**
+	 * @return static
+	 */
+	public function addComponent(IComponent $component, ?string $name, ?string $insertBefore = null)
+	{
+		if ($this->extractStepFromName($name) !== null) {
+			if (!$component instanceof Forms\Form) {
 				throw new UnexpectedValueException(
-					sprintf('Method %s::%s() did not return or create %s.', static::class, $method, Form::class)
+					sprintf('Component %s must be instance of %s, %s given', (string) $name, Forms\Form::class, get_class($component))
 				);
 			}
 			$this->applyCallbacksToButtons($component);
-
-			return $component;
 		}
 
-		return null;
+		return parent::addComponent($component, $name, $insertBefore);
+	}
+
+	protected function createComponent(string $name): ?IComponent
+	{
+		if (preg_match('#^step\d+$#', $name)) {
+			$ucname = ucfirst($name);
+			$method = 'create' . $ucname;
+			if ($ucname !== $name && method_exists($this, $method) && (new ReflectionMethod($this, $method))->getName() === $method) {
+				$component = $this->$method($name);
+				if (!$component instanceof IComponent && !isset($this->components[$name])) {
+					throw new UnexpectedValueException(
+						sprintf('Method %s::%s() did not return or create the desired component.', static::class, $method)
+					);
+				}
+				return $component;
+			}
+			return null;
+		}
+
+		return parent::createComponent($name);
 	}
 
 	private function applyCallbacksToButtons(Forms\Form $form): void
@@ -198,6 +313,27 @@ class Wizard extends Container implements IWizard
 			if ($control->getName() === self::PREV_SUBMIT_NAME) {
 				$control->setValidationScope([]);
 			}
+		}
+	}
+
+	/**
+	 * @return IPresenter|Presenter
+	 */
+	public function getPresenter(): IPresenter
+	{
+		if (!$this->presenter) {
+			$this->presenter = $this->lookup(IPresenter::class);
+		}
+
+		return $this->presenter;
+	}
+
+	protected function validateParent(IContainer $parent): void
+	{
+		if (!$this->startupCalled) {
+			$this->startupCalled = true;
+
+			$this->startup();
 		}
 	}
 

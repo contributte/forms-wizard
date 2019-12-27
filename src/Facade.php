@@ -12,7 +12,7 @@ use Nette\Utils\ObjectHelpers;
  * @property-read Form $currentComponent
  * @property-read bool $success
  * @property-read int $totalSteps
- * @property-read array $steps
+ * @property-read int[] $steps
  * @property-read int $currentStep
  * @property-read int $lastStep
  */
@@ -23,9 +23,6 @@ class Facade
 
 	/** @var IWizard */
 	private $wizard;
-
-	/** @var int|null */
-	private $steps = null;
 
 	public function __construct(IWizard $wizard)
 	{
@@ -62,15 +59,7 @@ class Facade
 
 	public function getTotalSteps(): int
 	{
-		if ($this->steps === null) {
-			$iterator = 1;
-			while ($this->wizard->getComponent('step' . $iterator, false)) {
-				$iterator++;
-			}
-			$this->steps = $iterator - 1;
-		}
-
-		return $this->steps;
+		return $this->wizard->getTotalSteps();
 	}
 
 	/**
@@ -78,7 +67,7 @@ class Facade
 	 */
 	public function getSteps(): array
 	{
-		return range(1, $this->getTotalSteps());
+		return array_keys($this->wizard->getSteps());
 	}
 
 	public function render(): void
@@ -103,7 +92,7 @@ class Facade
 
 	public function isDisabled(int $step): bool
 	{
-		return $step > $this->getLastStep();
+		return !$this->wizard->getSteps()[$step];
 	}
 
 	/**
