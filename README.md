@@ -23,7 +23,7 @@ extensions:
 
 use Nette\Application\UI\Form;
 
-class Wizard extends Contribute\FormWizard\Wizard {
+class Wizard extends Contributte\FormWizard\Wizard {
 
     protected function finish(): void 
     {
