@@ -90,7 +90,7 @@ final class HomepagePresenter extends Nette\Application\UI\Presenter {
 
 ## Template
 
-```html
+```latte
 <div n:wizard="wizard">
     <ul n:if="!$wizard->isSuccess()">
         <li n:foreach="$wizard->steps as $step" n:class="$wizard->isDisabled($step) ? disabled, $wizard->isActive($step) ? active">

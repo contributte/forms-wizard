@@ -21,8 +21,8 @@ Website ðŸš€ <a href="https://contributte.org">contributte.org</a> | Contact ðŸ‘
 
 To install latest version of `contributte/forms-wizard` use [Composer](https://getcomposer.org).
 
-```
-$ composer require contributte/forms-wizard
+```bash
+composer require contributte/forms-wizard
 ```
 
 ## Documentation
