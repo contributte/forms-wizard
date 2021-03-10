@@ -3,19 +3,19 @@
 ## Content
 
 - [Usage - how use it](#usage)
-    - [Register extension](#register-extension)
-    - [Component](#component)
-    - [Presenter](#presenter)
-    - [Template](#template)
+	- [Register extension](#register-extension)
+	- [Component](#component)
+	- [Presenter](#presenter)
+	- [Template](#template)
 
 
 ## Usage
 
 ### Register extension
 
-```yaml
+```neon
 extensions:
-    - Contributte\FormWizard\DI\WizardExtension
+	- Contributte\FormWizard\DI\WizardExtension
 ```
 
 ## Component
@@ -26,41 +26,41 @@ use Nette\Application\UI\Form;
 
 class Wizard extends Contributte\FormWizard\Wizard {
 
-    protected function finish(): void 
-    {
-        $values = $this->getValues();
-    }
+	protected function finish(): void 
+	{
+		$values = $this->getValues();
+	}
 
-    protected function createStep1(): Form 
-    {
-        $form = $this->createForm();
+	protected function createStep1(): Form 
+	{
+		$form = $this->createForm();
 
-        $form->addText('name', 'User name')
-            ->setRequired();
+		$form->addText('name', 'User name')
+			->setRequired();
 
-        $form->addSubmit(self::NEXT_SUBMIT_NAME, 'Next');
+		$form->addSubmit(self::NEXT_SUBMIT_NAME, 'Next');
 
-        return $form;
-    }
+		return $form;
+	}
 
-    protected function createStep2(): Form 
-    {
-        $form = $this->createForm();
+	protected function createStep2(): Form 
+	{
+		$form = $this->createForm();
 
-        $form->addText('email', 'Email')
-            ->setRequired();
+		$form->addText('email', 'Email')
+			->setRequired();
 
-        $form->addSubmit(self::PREV_SUBMIT_NAME, 'Back');
-        $form->addSubmit(self::FINISH_SUBMIT_NAME, 'Register');
+		$form->addSubmit(self::PREV_SUBMIT_NAME, 'Back');
+		$form->addSubmit(self::FINISH_SUBMIT_NAME, 'Register');
 
-        return $form;
-    }
+		return $form;
+	}
 }
 ```
 
-```yaml
+```neon
 services:
-    - Wizard
+	- Wizard
 ```
 
 ## Presenter
@@ -69,20 +69,20 @@ services:
 
 final class HomepagePresenter extends Nette\Application\UI\Presenter {
 
-    /** @var Wizard @inject */
-    public $wizard;
-    
-    public function handleChangeStep(int $step): void 
-    {    
-        $this['wizard']->setStep($step);
-        
-        $this->redirect('wizard'); // Optional, hides parameter from URL
-    }
+	/** @var Wizard @inject */
+	public $wizard;
+	
+	public function handleChangeStep(int $step): void 
+	{
+		$this['wizard']->setStep($step);
+		
+		$this->redirect('wizard'); // Optional, hides parameter from URL
+	}
 
-    protected function createComponentWizard(): Wizard 
-    {
-        return $this->wizard;
-    }
+	protected function createComponentWizard(): Wizard 
+	{
+		return $this->wizard;
+	}
 
 }
 
