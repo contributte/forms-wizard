@@ -3,8 +3,8 @@
 namespace Contributte\FormWizard;
 
 use DateTime;
+use Nette\Application\UI\Component;
 use Nette\Application\UI\Form;
-use Nette\ComponentModel\Container;
 use Nette\ComponentModel\IComponent;
 use Nette\Forms;
 use Nette\Forms\Controls\SubmitButton;
@@ -14,7 +14,7 @@ use Nette\UnexpectedValueException;
 use Nette\Utils\ArrayHash;
 use ReflectionMethod;
 
-class Wizard extends Container implements IWizard
+class Wizard extends Component implements IWizard
 {
 
 	private const CURRENT_STEP = 'currentStep';
