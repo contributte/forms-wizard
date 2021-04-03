@@ -8,9 +8,9 @@ use DateTime;
 use InvalidArgumentException;
 use LogicException;
 use Nette\Application\IPresenter;
+use Nette\Application\UI\Component;
 use Nette\Application\UI\Form;
 use Nette\Application\UI\Presenter;
-use Nette\ComponentModel\Container;
 use Nette\ComponentModel\IComponent;
 use Nette\ComponentModel\IContainer;
 use Nette\Forms;
@@ -20,7 +20,7 @@ use Nette\UnexpectedValueException;
 use Nette\Utils\ArrayHash;
 use ReflectionMethod;
 
-class Wizard extends Container implements IWizard
+class Wizard extends Component implements IWizard
 {
 
 	/** @var Session */
