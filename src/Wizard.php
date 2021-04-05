@@ -259,7 +259,10 @@ class Wizard extends Component implements IWizard
 		return $form;
 	}
 
-	protected function extractStepFromName(string | null $name): ?int
+	/**
+	 * @param string|null $name
+	 */
+	protected function extractStepFromName($name): ?int
 	{
 		if ($name === null || !preg_match('#^step(\d+)$#', $name, $matches)) {
 			return null;
