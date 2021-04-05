@@ -11,12 +11,15 @@ class WizardSessionSection
 	private const VALUES = 'values';
 	private const LAST_STEP = 'lastStep';
 
-	/** @var SessionSection */
+	/** @var SessionSection<string, mixed> */
 	private $section;
 
 	/** @var mixed[]|null */
 	private $cache;
 
+	/**
+	 * @param SessionSection<string, mixed> $section
+	 */
 	public function __construct(SessionSection $section)
 	{
 		$this->section = $section;
