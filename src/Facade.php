@@ -30,7 +30,7 @@ class Facade
 	}
 
 	/**
-	 * @return mixed[]|ArrayHash
+	 * @return mixed[]|ArrayHash<string|int,mixed>
 	 */
 	public function getValues(bool $asArray = false)
 	{

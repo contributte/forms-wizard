@@ -4,7 +4,6 @@ namespace Contributte\FormWizard;
 
 use Contributte\FormWizard\Session\WizardSessionSection;
 use Contributte\FormWizard\Steps\StepCounter;
-use DateTime;
 use InvalidArgumentException;
 use LogicException;
 use Nette\Application\UI\Component;
@@ -31,13 +30,13 @@ class Wizard extends Component implements IWizard
 	/** @var StepCounter|null */
 	private $stepCounter;
 
-	/** @var DateTime|string|int */
+	/** @var string|null */
 	protected $expiration = '+ 20 minutes';
 
 	/** @var callable[] */
 	public $onSuccess = [];
 
-	/** @var IFormFactory */
+	/** @var IFormFactory|null */
 	private $factory;
 
 	/** @var bool */
@@ -163,7 +162,7 @@ class Wizard extends Component implements IWizard
 	}
 
 	/**
-	 * @return mixed[]|ArrayHash
+	 * @return mixed[]|ArrayHash<string|int,mixed>
 	 */
 	public function getValues(bool $asArray = false)
 	{
@@ -209,6 +208,11 @@ class Wizard extends Component implements IWizard
 	public function submitStep(SubmitButton $button): void
 	{
 		$form = $button->getForm();
+
+		if ($form === null) {
+			return;
+		}
+
 		$submitName = $button->getName();
 		$step = $this->extractStepFromName($form->getName());
 
@@ -221,6 +225,7 @@ class Wizard extends Component implements IWizard
 				$this->getStepCounter()->previousStep();
 			} while ($this->isStepSkipped($this->getCurrentStep()));
 		} elseif ($form->isValid()) {
+			/* @phpstan-ignore-next-line $form->getValues('array') always returns an array */
 			$this->getSection()->setStepValues($this->getCurrentStep(), $form->getValues('array'));
 
 			if ($submitName === self::NEXT_SUBMIT_NAME) {
@@ -254,9 +259,9 @@ class Wizard extends Component implements IWizard
 		return $form;
 	}
 
-	protected function extractStepFromName(string $name): ?int
+	protected function extractStepFromName(string | null $name): ?int
 	{
-		if (!preg_match('#^step(\d+)$#', $name, $matches)) {
+		if ($name === null || !preg_match('#^step(\d+)$#', $name, $matches)) {
 			return null;
 		}
 
@@ -288,7 +293,7 @@ class Wizard extends Component implements IWizard
 			$method = 'create' . $ucname;
 			if ($ucname !== $name && method_exists($this, $method) && (new ReflectionMethod($this, $method))->getName() === $method) {
 				$component = $this->$method($name);
-				if (!$component instanceof IComponent && !isset($this->components[$name])) {
+				if (!$component instanceof IComponent && $this->getComponent($name) === null) {
 					throw new UnexpectedValueException(
 						sprintf('Method %s::%s() did not return or create the desired component.', static::class, $method)
 					);
@@ -322,10 +327,10 @@ class Wizard extends Component implements IWizard
 	/**
 	 * @return ?Presenter
 	 */
-	public function getPresenter(bool $throw = true): ?Presenter
+	public function getPresenter(): ?Presenter
 	{
 		if (!$this->presenter) {
-			$this->presenter = $this->lookup(Presenter::class, $throw);
+			$this->presenter = parent::getPresenter();
 		}
 
 		return $this->presenter;
