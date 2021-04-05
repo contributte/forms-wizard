@@ -45,12 +45,8 @@ class WizardMacros extends MacroSet
 		$name = $writer->formatWord($words[0]);
 
 		$componentGetter = '$this->global->uiControl->getComponent(' . $name . ')';
-		// variable
-		if ($name[0] === '$') {
-			$wizard = sprintf('is_object(%s) ? %s : %s', $name, $name, $componentGetter);
-		} else {
-			$wizard = $componentGetter;
-		}
+		// variable : getter
+		$wizard = $name[0] === '$' ? sprintf('is_object(%s) ? %s : %s', $name, $name, $componentGetter) : $componentGetter;
 
 		return sprintf('$wizard = %s::createFacade(%s);', static::class, $wizard);
 	}

@@ -35,9 +35,10 @@ class WizardSessionSection
 	}
 
 	/**
+	 * @param string $name
 	 * @param mixed $value
 	 */
-	protected function setSectionValue(string $name, $value): void
+	protected function setSectionValue($name, $value): void
 	{
 		$this->section[$name] = $value;
 	}
