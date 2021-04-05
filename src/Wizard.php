@@ -7,7 +7,6 @@ use Contributte\FormWizard\Steps\StepCounter;
 use DateTime;
 use InvalidArgumentException;
 use LogicException;
-use Nette\Application\IPresenter;
 use Nette\Application\UI\Component;
 use Nette\Application\UI\Form;
 use Nette\Application\UI\Presenter;
@@ -44,7 +43,7 @@ class Wizard extends Component implements IWizard
 	/** @var bool */
 	private $isSuccess = false;
 
-	/** @var IPresenter|null */
+	/** @var Presenter|null */
 	private $presenter;
 
 	/** @var bool */
@@ -317,12 +316,12 @@ class Wizard extends Component implements IWizard
 	}
 
 	/**
-	 * @return IPresenter|Presenter
+	 * @return ?Presenter
 	 */
-	public function getPresenter(): IPresenter
+	public function getPresenter($throw = true): ?Presenter
 	{
 		if (!$this->presenter) {
-			$this->presenter = $this->lookup(IPresenter::class);
+			$this->presenter = $this->lookup(Presenter::class, $throw);
 		}
 
 		return $this->presenter;
