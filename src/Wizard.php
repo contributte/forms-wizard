@@ -69,9 +69,11 @@ class Wizard extends Component implements IWizard
 		if ($step < 1) {
 			throw new InvalidArgumentException(sprintf('Step must be greater than 0, %d given', $step));
 		}
+
 		if ($step === 1) {
 			throw new InvalidArgumentException('Cannot skip first step');
 		}
+
 		if ($step === $this->getTotalSteps()) {
 			throw new InvalidArgumentException('Cannot skip last step');
 		}
@@ -113,6 +115,7 @@ class Wizard extends Component implements IWizard
 					break;
 				}
 			}
+
 			if ($counter < 1) {
 				throw new LogicException('Wizard must have at least 1 step');
 			}
@@ -217,7 +220,6 @@ class Wizard extends Component implements IWizard
 			do {
 				$this->getStepCounter()->previousStep();
 			} while ($this->isStepSkipped($this->getCurrentStep()));
-
 		} elseif ($form->isValid()) {
 			$this->getSection()->setStepValues($this->getCurrentStep(), $form->getValues('array'));
 
@@ -291,8 +293,10 @@ class Wizard extends Component implements IWizard
 						sprintf('Method %s::%s() did not return or create the desired component.', static::class, $method)
 					);
 				}
+
 				return $component;
 			}
+
 			return null;
 		}
 
@@ -318,7 +322,7 @@ class Wizard extends Component implements IWizard
 	/**
 	 * @return ?Presenter
 	 */
-	public function getPresenter($throw = true): ?Presenter
+	public function getPresenter(bool $throw = true): ?Presenter
 	{
 		if (!$this->presenter) {
 			$this->presenter = $this->lookup(Presenter::class, $throw);
