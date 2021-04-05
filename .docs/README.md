@@ -26,24 +26,43 @@ use Nette\Application\UI\Form;
 
 class Wizard extends Contributte\FormWizard\Wizard {
 
-	protected function finish(): void 
+	protected function finish(): void
 	{
 		$values = $this->getValues();
 	}
 
-	protected function createStep1(): Form 
+	protected function startup(): void
+	{
+		$this->skipStepIf(2, function (array $values): bool {
+			return isset($values[1]) && $values[1]['skip'] === true;
+		});
+	}
+
+	protected function createStep1(): Form
 	{
 		$form = $this->createForm();
 
-		$form->addText('name', 'User name')
-			->setRequired();
+		$form->addCheckbox('skip', 'Skip username');
 
 		$form->addSubmit(self::NEXT_SUBMIT_NAME, 'Next');
 
 		return $form;
 	}
 
-	protected function createStep2(): Form 
+	protected function createStep2(): Form
+	{
+		$form = $this->createForm();
+
+		$form->addText('username', 'Username')
+			->setRequired();
+
+		$form->addSubmit(self::PREV_SUBMIT_NAME, 'Back');
+		$form->addSubmit(self::NEXT_SUBMIT_NAME, 'Next');
+
+		return $form;
+	}
+
+	protected function createStep3(): Form
 	{
 		$form = $this->createForm();
 
@@ -103,6 +122,10 @@ final class HomepagePresenter extends Nette\Application\UI\Presenter {
     {/step}
 
     {step 2}
+        {control $form}
+    {/step}
+
+    {step 3}
         {control $form}
     {/step}
 
