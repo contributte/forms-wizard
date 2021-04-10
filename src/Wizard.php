@@ -156,6 +156,14 @@ class Wizard extends Component implements IWizard
 		return $steps;
 	}
 
+	/**
+	 * @return mixed[]
+	 */
+	public function getStepData(int $step): array
+	{
+		return [];
+	}
+
 	public function getTotalSteps(): int
 	{
 		return $this->getStepCounter()->getTotalSteps();

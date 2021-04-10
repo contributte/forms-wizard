@@ -35,6 +35,11 @@ interface IWizard
 	 */
 	public function getSteps(): array;
 
+	/**
+	 * @return mixed[]
+	 */
+	public function getStepData(int $step): array;
+
 	public function getTotalSteps(): int;
 
 	/**

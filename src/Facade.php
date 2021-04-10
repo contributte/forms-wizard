@@ -70,6 +70,14 @@ class Facade
 		return array_keys($this->wizard->getSteps());
 	}
 
+	/**
+	 * @return mixed[]
+	 */
+	public function getStepData(int $step): array
+	{
+		return $this->wizard->getStepData($step);
+	}
+
 	public function render(): void
 	{
 		$this->wizard->render();

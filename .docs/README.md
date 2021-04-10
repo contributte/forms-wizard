@@ -26,6 +26,12 @@ use Nette\Application\UI\Form;
 
 class Wizard extends Contributte\FormWizard\Wizard {
 
+	private array $stepNames = [
+	    1 => "Skip username",
+	    2 => "Username",
+	    3 => "Email",
+	];
+
 	protected function finish(): void
 	{
 		$values = $this->getValues();
@@ -36,6 +42,13 @@ class Wizard extends Contributte\FormWizard\Wizard {
 		$this->skipStepIf(2, function (array $values): bool {
 			return isset($values[1]) && $values[1]['skip'] === true;
 		});
+	}
+
+	public function getStepData(int $step): array
+	{
+		return [
+		    'name' => $this->stepNames[$step]
+		];
 	}
 
 	protected function createStep1(): Form
@@ -113,7 +126,7 @@ final class HomepagePresenter extends Nette\Application\UI\Presenter {
 <div n:wizard="wizard">
     <ul n:if="!$wizard->isSuccess()">
         <li n:foreach="$wizard->steps as $step" n:class="$wizard->isDisabled($step) ? disabled, $wizard->isActive($step) ? active">
-            <a n:tag-if="$wizard->useLink($step)" n:href="changeStep! $step">{$step}</a>
+            <a n:tag-if="$wizard->useLink($step)" n:href="changeStep! $step">{$step} - {$wizard->getStepData($step)['name']}</a>
         </li>
     </ul>
 
