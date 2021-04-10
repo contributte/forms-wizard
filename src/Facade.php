@@ -44,7 +44,7 @@ class Facade
 
 	public function useLink(int $step): bool
 	{
-		return !$this->isDisabled($step) && !$this->isCurrent($step);
+		return !$this->isDisabled($step) && !$this->isCurrent($step) && $step <= $this->wizard->getLastStep();
 	}
 
 	public function isCurrent(int $step): bool
