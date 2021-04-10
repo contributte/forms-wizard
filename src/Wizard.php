@@ -249,6 +249,12 @@ class Wizard extends Component implements IWizard
 		$this->create()->render();
 	}
 
+	public function reset(): void
+	{
+		$this->session->destroy();
+		$this->section = null;
+	}
+
 	public function create(?string $step = null): Form
 	{
 		$step = (int) ($step ?? $this->getCurrentStep());

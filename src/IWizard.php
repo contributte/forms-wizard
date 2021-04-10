@@ -24,6 +24,8 @@ interface IWizard
 
 	public function render(): void;
 
+	public function reset(): void;
+
 	public function create(?string $step = null): Form;
 
 	public function isSuccess(): bool;
