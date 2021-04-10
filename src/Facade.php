@@ -75,6 +75,11 @@ class Facade
 		$this->wizard->render();
 	}
 
+	public function reset(): void
+	{
+		$this->wizard->reset();
+	}
+
 	public function getCurrentStep(): int
 	{
 		return $this->wizard->getCurrentStep();
