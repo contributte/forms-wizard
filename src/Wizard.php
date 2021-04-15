@@ -51,6 +51,9 @@ class Wizard extends Component implements IWizard
 	/** @var mixed[] */
 	private $stepsConditions = [];
 
+	/** @var mixed[] */
+	private $defaultValuesCallbacks = [];
+
 	public function __construct(Session $session)
 	{
 		$this->session = $session;
@@ -78,6 +81,15 @@ class Wizard extends Component implements IWizard
 		}
 
 		$this->stepsConditions[$step][] = $callback;
+	}
+
+	protected function setDefaultValues(int $step, callable $defaultValuesCallback): void
+	{
+		if ($step < 1) {
+			throw new InvalidArgumentException(sprintf('Step must be greater than 0, %d given', $step));
+		}
+
+		$this->defaultValuesCallbacks[$step][] = $defaultValuesCallback;
 	}
 
 	protected function startup(): void
@@ -268,6 +280,14 @@ class Wizard extends Component implements IWizard
 		$step = (int) ($step ?? $this->getCurrentStep());
 		/** @var Form $form */
 		$form = $this->getComponent('step' . $step);
+
+		// Set default values via callbacks
+		$values = $this->getRawValues();
+		foreach ($this->defaultValuesCallbacks[$step] ?? [] as $callback) {
+			$callback($form, $values);
+		}
+
+		// Set submited values
 		$form->setValues((array) $this->getSection()->getStepValues($step));
 
 		return $form;
