@@ -273,6 +273,7 @@ class Wizard extends Component implements IWizard
 	{
 		$this->session->destroy();
 		$this->section = null;
+		$this->stepCounter = null;
 	}
 
 	public function create(?string $step = null): Form
