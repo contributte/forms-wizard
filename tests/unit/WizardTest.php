@@ -275,4 +275,43 @@ class WizardTest extends \Codeception\TestCase\Test
 		$this->assertSame(1, $wizard->getLastStep());
 	}
 
+	public function testDefaultValues()
+	{
+		$hierarchy = $this->services->hierarchy->createHierarchy(WizardPresenter::class);
+
+		$defaultValues = $hierarchy->getControl('wizard')->getObject()->create()->getValues(true);
+		$this->assertSame([
+			'name' => 'This is default name',
+			'skip' => false
+		], $defaultValues);
+
+		$hierarchy->cleanup();
+
+		// Submit step1
+		$payload = array_merge(
+			$defaultValues,
+			[
+				'skip' => '0',
+				Wizard::NEXT_SUBMIT_NAME => 'submit',
+			]
+		);
+
+		$response = $hierarchy->getControl('wizard')
+			->getForm('step1')
+			->setValues($payload)->send();
+
+		/** @var Wizard $wizard */
+		$wizard = $response->getForm()->getParent();
+
+		$this->assertFalse($wizard->isSuccess());
+
+		$this->assertSame(0, Wizard::$called);
+		$this->assertSame([
+			'name' => 'This is default name',
+			'skip' => false
+		], $wizard->getValues(true));
+		$this->assertSame(2, $wizard->getCurrentStep());
+		$this->assertSame(2, $wizard->getLastStep());
+	}
+
 }
