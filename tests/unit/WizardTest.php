@@ -239,4 +239,40 @@ class WizardTest extends \Codeception\TestCase\Test
 		$this->assertFalse($wizard->isSuccess());
 	}
 
+	public function testReset()
+	{
+        $hierarchy = $this->services->hierarchy->createHierarchy(WizardPresenter::class);
+
+		// Submit step1
+		$response = $hierarchy->getControl('wizard')
+			->getForm('step1')
+			->setValues([
+				'name' => 'Name',
+				'skip' => '0',
+				Wizard::NEXT_SUBMIT_NAME => 'submit',
+			])->send();
+
+		/** @var Wizard $wizard */
+		$wizard = $response->getForm()->getParent();
+
+		$this->assertFalse($wizard->isSuccess());
+		$this->assertSame(0, Wizard::$called);
+		$this->assertSame([
+			'name' => 'Name',
+			'skip' => false
+		], $wizard->getValues(true));
+		$this->assertSame(2, $wizard->getCurrentStep());
+		$this->assertSame(2, $wizard->getLastStep());
+
+		// Reset wizard
+		$wizard->reset();
+
+		$this->assertFalse($wizard->isSuccess());
+		$this->assertSame(0, Wizard::$called);
+		$this->assertSame([], $wizard->getValues(true));
+		$this->assertSame([], Wizard::$values);
+		$this->assertSame(1, $wizard->getCurrentStep());
+		$this->assertSame(1, $wizard->getLastStep());
+	}
+
 }
