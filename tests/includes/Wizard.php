@@ -1,5 +1,6 @@
 <?php
 
+use Nette\Application\UI\Form;
 use Nette\Http\Session;
 
 class Wizard extends \Contributte\FormWizard\Wizard
@@ -26,6 +27,12 @@ class Wizard extends \Contributte\FormWizard\Wizard
 	{
 		$this->skipStepIf(2, function (array $values): bool {
 			return isset($values[1]) && $values[1]['skip'];
+		});
+		$this->setDefaultValues(1, function (Form $form, array $values) {
+			$data = [
+			    'name' => 'This is default name'
+			];
+			$form->setDefaults($data);
 		});
 	}
 
