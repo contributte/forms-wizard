@@ -42,6 +42,12 @@ class Wizard extends Contributte\FormWizard\Wizard {
 		$this->skipStepIf(2, function (array $values): bool {
 			return isset($values[1]) && $values[1]['skip'] === true;
 		});
+		$this->setDefaultValues(2, function (Form $form, array $values) {
+			$data = [
+			    'username' => 'john_doe'
+			];
+			$form->setDefaults($data);
+		});
 	}
 
 	public function getStepData(int $step): array
