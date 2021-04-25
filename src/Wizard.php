@@ -132,6 +132,7 @@ class Wizard extends Container implements IWizard
 					foreach ($this->onSuccess as $callback) {
 						$callback($this);
 					}
+
 					$this->resetSection();
 				}
 			}
@@ -171,6 +172,7 @@ class Wizard extends Container implements IWizard
 					sprintf('Method %s::%s() did not return or create %s.', static::class, $method, Form::class)
 				);
 			}
+
 			$this->applyCallbacksToButtons($component);
 
 			return $component;

@@ -67,6 +67,7 @@ class Facade
 			while ($this->wizard->getComponent('step' . $iterator, false)) {
 				$iterator++;
 			}
+
 			$this->steps = $iterator - 1;
 		}
 

@@ -41,6 +41,7 @@ class WizardMacros extends MacroSet
 		if (!$words) {
 			throw new CompileException('Missing control name in {wizard}');
 		}
+
 		$name = $writer->formatWord($words[0]);
 
 		$componentGetter = '$this->global->uiControl->getComponent(' . $name . ')';
