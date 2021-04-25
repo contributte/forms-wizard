@@ -14,13 +14,18 @@
 		"nette/http": "^3.0"
 	},
 	"require-dev": {
-		"ninjify/qa": "^0.8.0",
-		"ninjify/nunjuck": "^0.2.0",
-		"webchemistry/testing-helpers": "~2.0.0",
-		"latte/latte": "^2.7",
 		"codeception/codeception": "^2.5.1",
+		"latte/latte": "^2.7",
 		"nette/application": "^3.0",
-		"nette/di": "^3.0"
+		"nette/di": "^3.0",
+		"nette/tester": "^2.3.2",
+		"ninjify/nunjuck": "^0.3",
+		"ninjify/qa": "^0.12",
+		"phpstan/phpstan": "^0.12",
+		"phpstan/phpstan-deprecation-rules": "^0.12",
+		"phpstan/phpstan-nette": "^0.12",
+		"phpstan/phpstan-strict-rules": "^0.12",
+		"webchemistry/testing-helpers": "~2.0.0"
 	},
 	"minimum-stability": "RC",
 	"autoload": {
@@ -31,25 +36,6 @@
 	"autoload-dev": {
 		"classmap": [
 			"tests/includes"
-		]
-	},
-	"scripts": {
-		"qa": [
-			"linter src tests",
-			"codesniffer src tests"
-		],
-		"tests": [
-			"vendor/bin/codecept run"
-		],
-		"phpstan-install": [
-			"mkdir -p temp/phpstan",
-			"composer require -d temp/phpstan phpstan/phpstan:^0.10",
-			"composer require -d temp/phpstan phpstan/phpstan-deprecation-rules:^0.10",
-			"composer require -d temp/phpstan phpstan/phpstan-nette:^0.10",
-			"composer require -d temp/phpstan phpstan/phpstan-strict-rules:^0.10"
-		],
-		"phpstan": [
-			"temp/phpstan/vendor/bin/phpstan analyse -l max src"
 		]
 	},
 	"extra": {
