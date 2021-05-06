@@ -51,4 +51,4 @@ See [how to contribute](https://contributte.org) to this package. This package i
 -----
 
 Consider to [support](https://contributte.org/partners) **contributte** development team.
-Also thank you for using this package. Thanks.
+Also thank you for using this package.
