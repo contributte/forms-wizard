@@ -37,12 +37,12 @@ class WizardMacros extends MacroSet
 
 	public function wizardStart(MacroNode $node, PhpWriter $writer): string
 	{
-		$words = $node->tokenizer->fetchWords();
-		if (!$words) {
+		$word = $node->tokenizer->fetchWord();
+		if (!$word) {
 			throw new CompileException('Missing control name in {wizard}');
 		}
 
-		$name = $writer->formatWord($words[0]);
+		$name = $writer->formatWord($word);
 
 		$componentGetter = '$this->global->uiControl->getComponent(' . $name . ')';
 		// variable : getter
