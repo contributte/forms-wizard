@@ -1,48 +1,50 @@
 {
-	"name": "contributte/forms-wizard",
-	"type": "library",
-	"description": "Wizard component for nette/forms",
-	"keywords": [
-		"nette",
-		"contributte",
-		"forms",
-		"wizard"
-	],
-	"require": {
-		"php": ">=7.1",
-		"nette/forms": "^3.0",
-		"nette/http": "^3.0"
-	},
-	"require-dev": {
-		"codeception/codeception": "^4.1.20",
-		"codeception/module-asserts": "^1.3.1",
-		"codeception/module-phpbrowser": "^1.0.2",
-		"latte/latte": "^2.7",
-		"nette/application": "^3.0",
-		"nette/di": "^3.0",
-		"nette/tester": "^2.3.2",
-		"ninjify/nunjuck": "^0.3",
-		"ninjify/qa": "^0.12",
-		"phpstan/phpstan": "^0.12",
-		"phpstan/phpstan-deprecation-rules": "^0.12",
-		"phpstan/phpstan-nette": "^0.12",
-		"phpstan/phpstan-strict-rules": "^0.12",
-		"webchemistry/testing-helpers": "^3.0.0"
-	},
-	"minimum-stability": "RC",
-	"autoload": {
-		"psr-4": {
-			"Contributte\\FormWizard\\": ["src/"]
-		}
-	},
-	"autoload-dev": {
-		"classmap": [
-			"tests/includes"
-		]
-	},
-	"extra": {
-		"branch-alias": {
-			"dev-master": "2.1.x-dev"
-		}
-	}
+  "name": "contributte/forms-wizard",
+  "type": "library",
+  "description": "Wizard component for nette/forms",
+  "keywords": [
+    "nette",
+    "contributte",
+    "forms",
+    "wizard"
+  ],
+  "require": {
+    "php": ">=7.1",
+    "nette/forms": "^3.0",
+    "nette/http": "^3.0"
+  },
+  "require-dev": {
+    "codeception/codeception": "^4.1.20",
+    "codeception/module-asserts": "^1.3.1",
+    "codeception/module-phpbrowser": "^1.0.2",
+    "latte/latte": "^2.7",
+    "nette/application": "^3.0",
+    "nette/di": "^3.0",
+    "nette/tester": "^2.3.2",
+    "ninjify/nunjuck": "^0.3",
+    "ninjify/qa": "^0.12",
+    "phpstan/phpstan": "^0.12",
+    "phpstan/phpstan-deprecation-rules": "^0.12",
+    "phpstan/phpstan-nette": "^0.12",
+    "phpstan/phpstan-strict-rules": "^0.12",
+    "webchemistry/testing-helpers": "^3.0.0"
+  },
+  "minimum-stability": "RC",
+  "autoload": {
+    "psr-4": {
+      "Contributte\\FormWizard\\": [
+        "src/"
+      ]
+    }
+  },
+  "autoload-dev": {
+    "classmap": [
+      "tests/includes"
+    ]
+  },
+  "extra": {
+    "branch-alias": {
+      "dev-master": "2.1.x-dev"
+    }
+  }
 }
