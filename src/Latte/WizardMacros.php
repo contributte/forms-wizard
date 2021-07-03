@@ -38,7 +38,7 @@ class WizardMacros extends MacroSet
 	public function wizardStart(MacroNode $node, PhpWriter $writer): string
 	{
 		$word = $node->tokenizer->fetchWord();
-		if (!$word) {
+		if ($word === null || $word === '') {
 			throw new CompileException('Missing control name in {wizard}');
 		}
 
@@ -54,7 +54,7 @@ class WizardMacros extends MacroSet
 	public function stepStart(MacroNode $node, PhpWriter $writer): string
 	{
 		$word = $node->tokenizer->fetchWord();
-		if (!is_numeric($word) && !in_array($word, ['success', '"success"', "'success'"])) {
+		if (!is_numeric($word) && !in_array($word, ['success', '"success"', "'success'"], true)) {
 			throw new CompileException('First parameter in {step} must be a numeric.');
 		}
 

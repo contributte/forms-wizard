@@ -43,7 +43,7 @@ interface IWizard
 	public function getTotalSteps(): int;
 
 	/**
-	 * @return mixed[]|ArrayHash<string|int,mixed>
+	 * @return array<mixed>|ArrayHash<mixed>
 	 */
 	public function getValues(bool $asArray = false);
 
