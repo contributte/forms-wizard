@@ -2,10 +2,10 @@
 
 namespace Contributte\FormWizard;
 
+use Closure;
 use Nette\Forms\Form;
 use Nette\SmartObject;
 use Nette\Utils\ArrayHash;
-use Nette\Utils\ObjectHelpers;
 
 /**
  * @property-read mixed[]|ArrayHash $values
@@ -30,7 +30,7 @@ class Facade
 	}
 
 	/**
-	 * @return mixed[]|ArrayHash<string|int,mixed>
+	 * @return array<mixed>|ArrayHash<string|int,mixed>
 	 */
 	public function getValues(bool $asArray = false)
 	{
@@ -114,13 +114,13 @@ class Facade
 	public function __get(string $name)
 	{
 		$getters = ['get' . ucfirst($name), 'is' . ucfirst($name)];
-		foreach ($getters as $getter) {
-			if (method_exists($this, $getter)) {
-				return $this->$getter();
-			}
-		}
 
-		ObjectHelpers::strictGet(static::class, $name);
+		foreach ($getters as $getter) {
+			$callable = [$this, $getter];
+			assert(is_callable($callable));
+			$method = Closure::fromCallable($callable);
+			return $method($getter);
+		}
 	}
 
 }

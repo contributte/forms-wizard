@@ -4,6 +4,7 @@ namespace Contributte\FormWizard;
 
 use Contributte\FormWizard\Session\WizardSessionSection;
 use Contributte\FormWizard\Steps\StepCounter;
+use Closure;
 use InvalidArgumentException;
 use LogicException;
 use Nette\Application\UI\Component;
@@ -107,7 +108,7 @@ class Wizard extends Component implements IWizard
 
 	protected function getSection(): WizardSessionSection
 	{
-		if (!$this->section) {
+		if ($this->section === null) {
 			$section = $this->session->getSection('wizard' . $this->getName())
 				->setExpiration($this->expiration);
 
@@ -119,7 +120,8 @@ class Wizard extends Component implements IWizard
 
 	public function getStepCounter(): StepCounter
 	{
-		if (!$this->stepCounter) {
+		$counter = 1;
+		if ($this->stepCounter === null) {
 			for ($counter = 1; $counter < 1000; $counter++) {
 				if (!method_exists($this, 'createStep' . $counter) && !$this->getComponent('step' . $counter, false)) {
 					$counter--;
@@ -182,7 +184,7 @@ class Wizard extends Component implements IWizard
 	}
 
 	/**
-	 * @return mixed[]|ArrayHash<string|int,mixed>
+	 * @return array<mixed>|ArrayHash<mixed>
 	 */
 	public function getValues(bool $asArray = false)
 	{
@@ -222,7 +224,7 @@ class Wizard extends Component implements IWizard
 
 	protected function createForm(): Form
 	{
-		return $this->factory ? $this->factory->create() : new Form();
+		return $this->factory !== null ? $this->factory->create() : new Form();
 	}
 
 	public function submitStep(SubmitButton $button): void
@@ -236,7 +238,7 @@ class Wizard extends Component implements IWizard
 		$submitName = $button->getName();
 		$step = $this->extractStepFromName($form->getName());
 
-		if (!$step || $step !== $this->getCurrentStep()) {
+		if ($step === null || $step !== $this->getCurrentStep()) {
 			return;
 		}
 
@@ -299,7 +301,7 @@ class Wizard extends Component implements IWizard
 	 */
 	protected function extractStepFromName($name): ?int
 	{
-		if ($name === null || !preg_match('#^step(\d+)$#', $name, $matches)) {
+		if ($name === null || preg_match('#^step(\d+)$#', $name, $matches) === false) {
 			return null;
 		}
 
@@ -326,11 +328,15 @@ class Wizard extends Component implements IWizard
 
 	protected function createComponent(string $name): ?IComponent
 	{
-		if (preg_match('#^step\d+$#', $name)) {
+		if (preg_match('#^step\d+$#', $name) > 0) {
 			$ucname = ucfirst($name);
 			$method = 'create' . $ucname;
 			if ($ucname !== $name && method_exists($this, $method) && (new ReflectionMethod($this, $method))->getName() === $method) {
-				$component = $this->$method($name);
+				$callable = [$this, $method];
+				assert(is_callable($callable));
+				$callableMethod = Closure::fromCallable($callable);
+				$component = $callableMethod($name);
+
 				if (!$component instanceof IComponent && $this->getComponent($name) === null) {
 					throw new UnexpectedValueException(
 						sprintf('Method %s::%s() did not return or create the desired component.', static::class, $method)
@@ -350,7 +356,7 @@ class Wizard extends Component implements IWizard
 	{
 		/** @var SubmitButton $control */
 		foreach ($form->getComponents(false, SubmitButton::class) as $control) {
-			if (!in_array($control->getName(), [self::FINISH_SUBMIT_NAME, self::NEXT_SUBMIT_NAME, self::PREV_SUBMIT_NAME])) {
+			if (!in_array($control->getName(), [self::FINISH_SUBMIT_NAME, self::NEXT_SUBMIT_NAME, self::PREV_SUBMIT_NAME], true)) {
 				continue;
 			}
 
@@ -367,7 +373,7 @@ class Wizard extends Component implements IWizard
 	 */
 	public function getPresenter(): ?Presenter
 	{
-		if (!$this->presenter) {
+		if ($this->presenter === null) {
 			$this->presenter = parent::getPresenter();
 		}
 

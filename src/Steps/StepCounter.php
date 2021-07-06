@@ -29,12 +29,12 @@ final class StepCounter
 
 	public function getCurrentStep(): int
 	{
-		return $this->minmax($this->section->getCurrentStep() ?: 1);
+		return $this->minmax($this->section->getCurrentStep() ?? 1);
 	}
 
 	public function getLastStep(): int
 	{
-		return $this->minmax($this->section->getLastStep() ?: 1);
+		return $this->minmax($this->section->getLastStep() ?? 1);
 	}
 
 	public function setLastStep(int $step): void
@@ -70,7 +70,7 @@ final class StepCounter
 
 	public function canFinish(): bool
 	{
-		return $this->section->getValues() && $this->getLastStep() === $this->totalSteps;
+		return $this->section->getValues() !== [] && $this->getLastStep() === $this->totalSteps;
 	}
 
 	protected function minmax(int $value, int $min = 1, ?int $max = null): int
