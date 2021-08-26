@@ -121,7 +121,8 @@ class Wizard extends Component implements IWizard
 	public function getStepCounter(): StepCounter
 	{
 		if ($this->stepCounter === null) {
-			for ($counter = 1; $counter < 1000; $counter++) {
+			$counter = 1;
+			for (; $counter < 1000; $counter++) {
 				if (!method_exists($this, 'createStep' . $counter) && !$this->getComponent('step' . $counter, false)) {
 					$counter--;
 					break;

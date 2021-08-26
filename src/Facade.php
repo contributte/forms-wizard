@@ -122,7 +122,8 @@ class Facade
 			throw new LogicException(sprintf('Cannot call this method on %s.', UIForm::class));
 		}
 
-		if ($form->isSubmitted()) {
+		$submitted = (bool) $form->isSubmitted();
+		if ($submitted) {
 			$form->fireEvents();
 		}
 	}
