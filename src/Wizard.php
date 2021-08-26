@@ -120,7 +120,6 @@ class Wizard extends Component implements IWizard
 
 	public function getStepCounter(): StepCounter
 	{
-		$counter = 1;
 		if ($this->stepCounter === null) {
 			for ($counter = 1; $counter < 1000; $counter++) {
 				if (!method_exists($this, 'createStep' . $counter) && !$this->getComponent('step' . $counter, false)) {
@@ -278,7 +277,7 @@ class Wizard extends Component implements IWizard
 		$this->stepCounter = null;
 	}
 
-	public function create(?string $step = null): Form
+	public function create(?string $step = null, bool $defaultValues = true): Forms\Form
 	{
 		$step = (int) ($step ?? $this->getCurrentStep());
 		/** @var Form $form */
@@ -291,7 +290,9 @@ class Wizard extends Component implements IWizard
 		}
 
 		// Set submited values
-		$form->setValues((array) $this->getSection()->getStepValues($step));
+		if ($defaultValues) {
+			$form->setValues((array) $this->getSection()->getStepValues($step));
+		}
 
 		return $form;
 	}
@@ -380,13 +381,21 @@ class Wizard extends Component implements IWizard
 		return $this->presenter;
 	}
 
-	protected function validateParent(IContainer $parent): void
+	/**
+	 * @internal only for standalone usage, use Facade instead of
+	 */
+	public function callStartup(): void
 	{
 		if (!$this->startupCalled) {
 			$this->startupCalled = true;
 
 			$this->startup();
 		}
+	}
+
+	protected function validateParent(IContainer $parent): void
+	{
+		$this->callStartup();
 	}
 
 }

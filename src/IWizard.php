@@ -2,7 +2,7 @@
 
 namespace Contributte\FormWizard;
 
-use Nette\Application\UI\Form;
+use Nette\Forms\Form;
 use Nette\Utils\ArrayHash;
 
 interface IWizard
@@ -26,7 +26,7 @@ interface IWizard
 
 	public function reset(): void;
 
-	public function create(?string $step = null): Form;
+	public function create(?string $step = null, bool $defaultValues = true): Form;
 
 	public function isSuccess(): bool;
 
