@@ -29,7 +29,7 @@
     "phpstan/phpstan-strict-rules": "^0.12",
     "webchemistry/testing-helpers": "^3.0.0"
   },
-  "minimum-stability": "dev",
+  "minimum-stability": "stable",
   "autoload": {
     "psr-4": {
       "Contributte\\FormWizard\\": [

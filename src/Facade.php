@@ -3,6 +3,8 @@
 namespace Contributte\FormWizard;
 
 use Closure;
+use LogicException;
+use Nette\Application\UI\Form as UIForm;
 use Nette\Forms\Form;
 use Nette\SmartObject;
 use Nette\Utils\ArrayHash;
@@ -106,6 +108,29 @@ class Facade
 	public function isDisabled(int $step): bool
 	{
 		return !$this->wizard->getSteps()[$step];
+	}
+
+	public function attached(): void
+	{
+		if ($this->wizard instanceof Wizard) {
+			$this->wizard->callStartup();
+		}
+
+		$form = $this->wizard->create(null, false);
+
+		if ($form instanceof UIForm) {
+			throw new LogicException(sprintf('Cannot call this method on %s.', UIForm::class));
+		}
+
+		$submitted = (bool) $form->isSubmitted();
+		if ($submitted) {
+			$form->fireEvents();
+		}
+	}
+
+	public function renderCurrentComponent(): string
+	{
+		return (string) $this->getCurrentComponent();
 	}
 
 	/**
