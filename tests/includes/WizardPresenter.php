@@ -32,7 +32,7 @@ class WizardPresenter extends Presenter
 		$this->template->setFile(__DIR__ . '/template.latte');
 	}
 
-	public function link(string $destination, $args = []): string
+	public function link(string $destination, ...$args): string
 	{
 		return 'link';
 	}
