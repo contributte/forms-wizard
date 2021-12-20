@@ -122,6 +122,7 @@ class Wizard extends Component implements IWizard
 	{
 		$counter = 1;
 		if ($this->stepCounter === null) {
+			/** @phpstan-ignore-next-line $counter */
 			for ($counter = 1; $counter < 1000; $counter++) {
 				if (!method_exists($this, 'createStep' . $counter) && !$this->getComponent('step' . $counter, false)) {
 					$counter--;
