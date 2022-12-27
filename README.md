@@ -1,13 +1,14 @@
 ![](https://heatbadger.now.sh/github/readme/contributte/forms-wizard/)
 
 <p align=center>
-  <a href="https://travis-ci.org/github/contributte/forms-wizard><img src="https://travis-ci.org/contributte/forms-wizard.svg?branch=master"></a>
+  <a href="https://github.com/contributte/forms-wizard/actions"><img src="https://badgen.net/github/checks/contributte/forms-wizard/master"></a>
+  <a href="https://coveralls.io/r/contributte/forms-wizard"><img src="https://badgen.net/coveralls/c/github/contributte/forms-wizard"></a>
   <a href="https://packagist.org/packages/contributte/forms-wizard"><img src="https://badgen.net/packagist/dm/contributte/forms-wizard"></a>
   <a href="https://packagist.org/packages/contributte/forms-wizard"><img src="https://badgen.net/packagist/v/contributte/forms-wizard"></a>
 </p>
 <p align=center>
   <a href="https://packagist.org/packages/contributte/forms-wizard"><img src="https://badgen.net/packagist/php/contributte/forms-wizard"></a>
-  <a href="https://github.com/contributte/forms-wizard/LICENSE"><img src="https://badgen.net/github/license/contributte/forms-wizard"></a>
+  <a href="https://github.com/contributte/forms-wizard"><img src="https://badgen.net/github/license/contributte/forms-wizard"></a>
   <a href="https://bit.ly/ctteg"><img src="https://badgen.net/badge/support/gitter/cyan"></a>
   <a href="https://bit.ly/cttfo"><img src="https://badgen.net/badge/support/forum/yellow"></a>
   <a href="https://contributte.org/partners.html"><img src="https://badgen.net/badge/sponsor/donations/F96854"></a>
