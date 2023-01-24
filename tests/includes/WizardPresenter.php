@@ -18,11 +18,11 @@ class WizardPresenter extends Presenter
 		return $this->session;
 	}
 
-	protected function createTemplate(): \Nette\Application\UI\ITemplate
+	protected function createTemplate(): \Nette\Application\UI\Template
 	{
 		$template = parent::createTemplate();
 
-		WizardMacros::install($template->getLatte());
+		$template->getLatte()->addExtension(new \Contributte\FormWizard\Latte\WizardExtension());
 
 		return $template;
 	}
