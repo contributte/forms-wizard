@@ -11,6 +11,7 @@ use Latte\Compiler\Nodes\Php\ExpressionNode;
 use Latte\Compiler\Nodes\StatementNode;
 use Latte\Compiler\PrintContext;
 use Latte\Compiler\Tag;
+use Latte\RuntimeException;
 use Nette\ComponentModel\IComponent;
 
 final class WizardNode extends StatementNode
@@ -39,12 +40,12 @@ final class WizardNode extends StatementNode
 	}
 
 	/**
-	 * @throws Exception
+	 * @throws RuntimeException
 	 */
 	public static function createFacade(IComponent $component): Facade
 	{
 		if (!$component instanceof IWizard) {
-			throw new Exception('Wizard must be instance of ' . IWizard::class);
+			throw new RuntimeException('Wizard must be instance of ' . IWizard::class);
 		}
 
 		return new Facade($component);
@@ -74,7 +75,7 @@ final class WizardNode extends StatementNode
 		yield $this->content;
 	}
 
-	public static function toValue($args): mixed
+	public static function toValue(ExpressionNode $args): mixed
 	{
 		try {
 			return NodeHelpers::toValue($args, constants: true);
