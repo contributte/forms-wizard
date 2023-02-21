@@ -22,7 +22,11 @@ class WizardPresenter extends Presenter
 	{
 		$template = parent::createTemplate();
 
-		$template->getLatte()->addExtension(new \Contributte\FormWizard\Latte\WizardExtension());
+		if (version_compare(\Latte\Engine::VERSION, '3', '<')) { // @phpstan-ignore-line
+			WizardMacros::install($template->getLatte());
+		} else {
+			$template->getLatte()->addExtension(new \Contributte\FormWizard\Latte\WizardExtension());
+		}
 
 		return $template;
 	}

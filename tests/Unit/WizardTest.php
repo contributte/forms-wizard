@@ -7,7 +7,7 @@ use Nette\Http\Session;
 use Nette\Http\UrlScript;
 use WebChemistry\Testing\TUnitTest;
 
-class WizardTest extends \Codeception\TestCase\Test
+class WizardTest extends \Codeception\Test\Unit
 {
 
 	use TUnitTest;
