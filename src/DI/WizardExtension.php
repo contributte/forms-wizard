@@ -2,8 +2,7 @@
 
 namespace Contributte\FormWizard\DI;
 
-use Contributte\FormWizard\Latte\WizardMacros;
-use Latte\Engine;
+use Contributte\FormWizard\Latte\WizardExtension as WizardExtensionLatte;
 use Nette\DI\CompilerExtension;
 use Nette\DI\Definitions\FactoryDefinition;
 use Nette\DI\Definitions\Statement;
@@ -15,16 +14,11 @@ final class WizardExtension extends CompilerExtension
 	{
 		$builder = $this->getContainerBuilder();
 
-		/** @var FactoryDefinition $latte */
-		$latte = $builder->getDefinition('nette.latteFactory');
+		$latteDef = $builder->getDefinition('nette.latteFactory');
+		assert($latteDef instanceof FactoryDefinition);
 
-		$resultDefinition = $latte->getResultDefinition();
-
-		if (version_compare(Engine::VERSION, '3', '<')) { // @phpstan-ignore-line
-			$resultDefinition->addSetup(WizardMacros::class . '::install(?->getCompiler())', ['@self']);
-		} else {
-			$resultDefinition->addSetup('addExtension', [new Statement(\Contributte\FormWizard\Latte\WizardExtension::class)]);
-		}
+		$latteDef->getResultDefinition()
+			->addSetup('addExtension', [new Statement(WizardExtensionLatte::class)]);
 	}
 
 }
