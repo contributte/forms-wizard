@@ -10,11 +10,9 @@ final class StepCounter
 
 	use SmartObject;
 
-	/** @var WizardSessionSection */
-	private $section;
+	private WizardSessionSection $section;
 
-	/** @var int */
-	private $totalSteps;
+	private int $totalSteps;
 
 	public function __construct(WizardSessionSection $section, int $totalSteps)
 	{

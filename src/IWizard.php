@@ -45,6 +45,6 @@ interface IWizard
 	/**
 	 * @return array<mixed>|ArrayHash<mixed>
 	 */
-	public function getValues(bool $asArray = false);
+	public function getValues(bool $asArray = false): array|ArrayHash;
 
 }

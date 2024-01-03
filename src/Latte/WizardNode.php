@@ -17,11 +17,9 @@ use Nette\ComponentModel\IComponent;
 final class WizardNode extends StatementNode
 {
 
-	/** @var ExpressionNode */
-	public $name;
+	public ExpressionNode $name;
 
-	/** @var AreaNode */
-	public $content;
+	public AreaNode $content;
 
 	/**
 	 * @return Generator<int, ?mixed[], array{AreaNode, ?Tag}, self>
@@ -31,7 +29,7 @@ final class WizardNode extends StatementNode
 		$tag->outputMode = $tag::OutputRemoveIndentation;
 		$tag->expectArguments();
 
-		$node = new static;
+		$node = new static();
 		$node->name = $tag->parser->parseUnquotedStringOrExpression();
 
 		[$node->content] = yield;
@@ -51,9 +49,18 @@ final class WizardNode extends StatementNode
 		return new Facade($component);
 	}
 
+	public static function toValue(ExpressionNode $args): mixed
+	{
+		try {
+			return NodeHelpers::toValue($args, constants: true);
+		} catch (\InvalidArgumentException) {
+			return null;
+		}
+	}
+
 	public function print(PrintContext $context): string
 	{
-		$nameValue = static::toValue($this->name);
+		$nameValue = self::toValue($this->name);
 		$componentGetter = '$this->global->uiControl->getComponent("' . $nameValue . '")';
 		// variable : getter
 		$wizardGetter = $nameValue[0] === '$' ? sprintf('is_object(%s) ? %s : %s', $nameValue, $nameValue, $componentGetter) : $componentGetter;
@@ -63,25 +70,17 @@ final class WizardNode extends StatementNode
 			. "\n"
 			. ' %line %node ' // content
 			. "\n\n",
-			static::class,
+			self::class,
 			$wizardGetter,
 			$this->position,
 			$this->content
 		);
 	}
+
 	public function &getIterator(): \Generator
 	{
 		yield $this->name;
 		yield $this->content;
-	}
-
-	public static function toValue(ExpressionNode $args): mixed
-	{
-		try {
-			return NodeHelpers::toValue($args, constants: true);
-		} catch (\InvalidArgumentException) {
-			return null;
-		}
 	}
 
 }

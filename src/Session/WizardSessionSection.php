@@ -12,10 +12,10 @@ class WizardSessionSection
 	private const LAST_STEP = 'lastStep';
 
 	/** @var SessionSection<string, mixed> */
-	private $section;
+	private SessionSection $section;
 
 	/** @var mixed[]|null */
-	private $cache;
+	private ?array $cache = null;
 
 	/**
 	 * @param SessionSection<string, mixed> $section
@@ -23,27 +23,6 @@ class WizardSessionSection
 	public function __construct(SessionSection $section)
 	{
 		$this->section = $section;
-	}
-
-	/**
-	 * @return mixed
-	 */
-	protected function getSectionValue(string $name)
-	{
-		if ($name === self::VALUES && $this->cache !== null) {
-			return $this->cache;
-		}
-
-		return $this->section[$name];
-	}
-
-	/**
-	 * @param string $name
-	 * @param mixed $value
-	 */
-	protected function setSectionValue($name, $value): void
-	{
-		$this->section[$name] = $value;
 	}
 
 	public function getLastStep(): ?int
@@ -98,6 +77,20 @@ class WizardSessionSection
 		$this->cache = $this->section[self::VALUES];
 
 		$this->section->remove();
+	}
+
+	protected function getSectionValue(string $name): mixed
+	{
+		if ($name === self::VALUES && $this->cache !== null) {
+			return $this->cache;
+		}
+
+		return $this->section[$name];
+	}
+
+	protected function setSectionValue(string $name, mixed $value): void
+	{
+		$this->section[$name] = $value;
 	}
 
 }

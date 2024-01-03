@@ -67,6 +67,7 @@ class WizardMacros extends MacroSet
 
 	public function wizardEnd(): void
 	{
+		// No-op
 	}
 
 }

@@ -21,8 +21,7 @@ class Facade
 
 	use SmartObject;
 
-	/** @var IWizard */
-	private $wizard;
+	private IWizard $wizard;
 
 	public function __construct(IWizard $wizard)
 	{
@@ -32,7 +31,7 @@ class Facade
 	/**
 	 * @return array<mixed>|ArrayHash<string|int,mixed>
 	 */
-	public function getValues(bool $asArray = false)
+	public function getValues(bool $asArray = false): array|ArrayHash
 	{
 		return $this->wizard->getValues($asArray);
 	}
@@ -108,10 +107,7 @@ class Facade
 		return !$this->wizard->getSteps()[$step];
 	}
 
-	/**
-	 * @return mixed
-	 */
-	public function __get(string $name)
+	public function __get(string $name): mixed
 	{
 		$getters = ['get' . ucfirst($name), 'is' . ucfirst($name)];
 
@@ -119,6 +115,7 @@ class Facade
 			$callable = [$this, $getter];
 			assert(is_callable($callable));
 			$method = Closure::fromCallable($callable);
+
 			return $method($getter);
 		}
 	}

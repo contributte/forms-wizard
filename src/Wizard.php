@@ -2,18 +2,18 @@
 
 namespace Contributte\FormWizard;
 
+use Closure;
 use Contributte\FormWizard\Session\WizardSessionSection;
 use Contributte\FormWizard\Steps\StepCounter;
-use Closure;
 use InvalidArgumentException;
 use LogicException;
 use Nette\Application\UI\Component;
-use Nette\Application\UI\Form;
+use Nette\Application\UI\Form as UIForm;
 use Nette\Application\UI\Presenter;
 use Nette\ComponentModel\IComponent;
 use Nette\ComponentModel\IContainer;
-use Nette\Forms;
 use Nette\Forms\Controls\SubmitButton;
+use Nette\Forms\Form;
 use Nette\Http\Session;
 use Nette\UnexpectedValueException;
 use Nette\Utils\ArrayHash;
@@ -22,38 +22,30 @@ use ReflectionMethod;
 class Wizard extends Component implements IWizard
 {
 
-	/** @var Session */
-	private $session;
-
-	/** @var WizardSessionSection|null */
-	private $section;
-
-	/** @var StepCounter|null */
-	private $stepCounter;
-
-	/** @var string|null */
-	protected $expiration = '+ 20 minutes';
-
 	/** @var callable[] */
-	public $onSuccess = [];
+	public array $onSuccess = [];
 
-	/** @var IFormFactory|null */
-	private $factory;
+	protected ?string $expiration = '+ 20 minutes';
 
-	/** @var bool */
-	private $isSuccess = false;
+	private Session $session;
 
-	/** @var Presenter|null */
-	private $presenter;
+	private ?WizardSessionSection $section = null;
 
-	/** @var bool */
-	private $startupCalled = false;
+	private ?StepCounter $stepCounter = null;
+
+	private ?IFormFactory $factory = null;
+
+	private bool $isSuccess = false;
+
+	private ?Presenter $presenter = null;
+
+	private bool $startupCalled = false;
 
 	/** @var mixed[] */
-	private $stepsConditions = [];
+	private array $stepsConditions = [];
 
 	/** @var mixed[] */
-	private $defaultValuesCallbacks = [];
+	private array $defaultValuesCallbacks = [];
 
 	public function __construct(Session $session)
 	{
@@ -67,55 +59,9 @@ class Wizard extends Component implements IWizard
 		return $this;
 	}
 
-	protected function skipStepIf(int $step, callable $callback): void
-	{
-		if ($step < 1) {
-			throw new InvalidArgumentException(sprintf('Step must be greater than 0, %d given', $step));
-		}
-
-		if ($step === 1) {
-			throw new InvalidArgumentException('Cannot skip first step');
-		}
-
-		if ($step === $this->getTotalSteps()) {
-			throw new InvalidArgumentException('Cannot skip last step');
-		}
-
-		$this->stepsConditions[$step][] = $callback;
-	}
-
-	protected function setDefaultValues(int $step, callable $defaultValuesCallback): void
-	{
-		if ($step < 1) {
-			throw new InvalidArgumentException(sprintf('Step must be greater than 0, %d given', $step));
-		}
-
-		$this->defaultValuesCallbacks[$step][] = $defaultValuesCallback;
-	}
-
-	protected function startup(): void
-	{
-	}
-
-	protected function finish(): void
-	{
-	}
-
 	public function isSuccess(): bool
 	{
 		return $this->isSuccess;
-	}
-
-	protected function getSection(): WizardSessionSection
-	{
-		if ($this->section === null) {
-			$section = $this->session->getSection('wizard' . $this->getName())
-				->setExpiration($this->expiration);
-
-			$this->section = new WizardSessionSection($section);
-		}
-
-		return $this->section;
 	}
 
 	public function getStepCounter(): StepCounter
@@ -187,7 +133,7 @@ class Wizard extends Component implements IWizard
 	/**
 	 * @return array<mixed>|ArrayHash<mixed>
 	 */
-	public function getValues(bool $asArray = false)
+	public function getValues(bool $asArray = false): array|ArrayHash
 	{
 		$values = [];
 		foreach ($this->getRawValues() as $step => $value) {
@@ -221,11 +167,6 @@ class Wizard extends Component implements IWizard
 		}
 
 		return $this;
-	}
-
-	protected function createForm(): Form
-	{
-		return $this->factory !== null ? $this->factory->create() : new Form();
 	}
 
 	public function submitStep(SubmitButton $button): void
@@ -279,10 +220,10 @@ class Wizard extends Component implements IWizard
 		$this->stepCounter = null;
 	}
 
-	public function create(?string $step = null): Form
+	public function create(?string $step = null): UIForm
 	{
 		$step = (int) ($step ?? $this->getCurrentStep());
-		/** @var Form $form */
+		/** @var UIForm $form */
 		$form = $this->getComponent('step' . $step);
 
 		// Set default values via callbacks
@@ -298,26 +239,14 @@ class Wizard extends Component implements IWizard
 	}
 
 	/**
-	 * @param string|null $name
-	 */
-	protected function extractStepFromName($name): ?int
-	{
-		if ($name === null || preg_match('#^step(\d+)$#', $name, $matches) === false) {
-			return null;
-		}
-
-		return (int) $matches[1];
-	}
-
-	/**
 	 * @return static
 	 */
-	public function addComponent(IComponent $component, ?string $name, ?string $insertBefore = null)
+	public function addComponent(IComponent $component, ?string $name, ?string $insertBefore = null): static
 	{
 		if ($this->extractStepFromName($name) !== null) {
-			if (!$component instanceof Forms\Form) {
+			if (!$component instanceof Form) {
 				throw new UnexpectedValueException(
-					sprintf('Component %s must be instance of %s, %s given', (string) $name, Forms\Form::class, get_class($component))
+					sprintf('Component %s must be instance of %s, %s given', (string) $name, Form::class, $component::class)
 				);
 			}
 
@@ -325,6 +254,77 @@ class Wizard extends Component implements IWizard
 		}
 
 		return parent::addComponent($component, $name, $insertBefore);
+	}
+
+	public function getPresenter(): ?Presenter
+	{
+		if ($this->presenter === null) {
+			$this->presenter = parent::getPresenter();
+		}
+
+		return $this->presenter;
+	}
+
+	protected function skipStepIf(int $step, callable $callback): void
+	{
+		if ($step < 1) {
+			throw new InvalidArgumentException(sprintf('Step must be greater than 0, %d given', $step));
+		}
+
+		if ($step === 1) {
+			throw new InvalidArgumentException('Cannot skip first step');
+		}
+
+		if ($step === $this->getTotalSteps()) {
+			throw new InvalidArgumentException('Cannot skip last step');
+		}
+
+		$this->stepsConditions[$step][] = $callback;
+	}
+
+	protected function setDefaultValues(int $step, callable $defaultValuesCallback): void
+	{
+		if ($step < 1) {
+			throw new InvalidArgumentException(sprintf('Step must be greater than 0, %d given', $step));
+		}
+
+		$this->defaultValuesCallbacks[$step][] = $defaultValuesCallback;
+	}
+
+	protected function startup(): void
+	{
+		// No-op
+	}
+
+	protected function finish(): void
+	{
+		// No-op
+	}
+
+	protected function getSection(): WizardSessionSection
+	{
+		if ($this->section === null) {
+			$section = $this->session->getSection('wizard' . $this->getName())
+				->setExpiration($this->expiration);
+
+			$this->section = new WizardSessionSection($section);
+		}
+
+		return $this->section;
+	}
+
+	protected function createForm(): UIForm
+	{
+		return $this->factory !== null ? $this->factory->create() : new UIForm();
+	}
+
+	protected function extractStepFromName(?string $name): ?int
+	{
+		if ($name === null || preg_match('#^step(\d+)$#', $name, $matches) === false) {
+			return null;
+		}
+
+		return (int) $matches[1];
 	}
 
 	protected function createComponent(string $name): ?IComponent
@@ -353,7 +353,16 @@ class Wizard extends Component implements IWizard
 		return parent::createComponent($name);
 	}
 
-	private function applyCallbacksToButtons(Forms\Form $form): void
+	protected function validateParent(IContainer $parent): void
+	{
+		if (!$this->startupCalled) {
+			$this->startupCalled = true;
+
+			$this->startup();
+		}
+	}
+
+	private function applyCallbacksToButtons(Form $form): void
 	{
 		/** @var SubmitButton $control */
 		foreach ($form->getComponents(false, SubmitButton::class) as $control) {
@@ -366,27 +375,6 @@ class Wizard extends Component implements IWizard
 			if ($control->getName() === self::PREV_SUBMIT_NAME) {
 				$control->setValidationScope([]);
 			}
-		}
-	}
-
-	/**
-	 * @return ?Presenter
-	 */
-	public function getPresenter(): ?Presenter
-	{
-		if ($this->presenter === null) {
-			$this->presenter = parent::getPresenter();
-		}
-
-		return $this->presenter;
-	}
-
-	protected function validateParent(IContainer $parent): void
-	{
-		if (!$this->startupCalled) {
-			$this->startupCalled = true;
-
-			$this->startup();
 		}
 	}
 
