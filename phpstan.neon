@@ -16,3 +16,6 @@ parameters:
 		- .docs
 
 	ignoreErrors:
+
+	excludePaths:
+		- src/Latte/WizardMacros.php

@@ -338,7 +338,7 @@ class Wizard extends Component implements IWizard
 				$callableMethod = Closure::fromCallable($callable);
 				$component = $callableMethod($name);
 
-				if (!$component instanceof IComponent && $this->getComponent($name) === null) {
+				if (!($component instanceof IComponent) && $this->getComponent($name, false) === null) {
 					throw new UnexpectedValueException(
 						sprintf('Method %s::%s() did not return or create the desired component.', static::class, $method)
 					);
