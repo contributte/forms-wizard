@@ -1,18 +1,23 @@
-<?php
+<?php declare(strict_types = 1);
 
+namespace Tests\Fixtures;
+
+use Contributte\FormWizard\Wizard;
 use Nette\Application\UI\Form;
 use Nette\Http\Session;
 
-class Wizard extends \Contributte\FormWizard\Wizard
+class DummyWizard extends Wizard
 {
 
-	public static $called = 0;
+	public static int $called = 0;
 
-	public static $values = [];
+	/** @var array<mixed> */
+	public static array $values = [];
 
 	public function __construct(Session $session)
 	{
 		parent::__construct($session);
+
 		self::$called = 0;
 		self::$values = [];
 	}
@@ -25,20 +30,19 @@ class Wizard extends \Contributte\FormWizard\Wizard
 
 	protected function startup(): void
 	{
-		$this->skipStepIf(2, function (array $values): bool {
-			return isset($values[1]) && $values[1]['skip'];
-		});
-		$this->setDefaultValues(1, function (Form $form, array $values) {
+		$this->skipStepIf(2, fn (array $values): bool => isset($values[1]) && $values[1]['skip']);
+		$this->setDefaultValues(1, function (Form $form, array $values): void {
 			$data = [
-			    'name' => 'This is default name'
+				'name' => 'This is default name',
 			];
 			$form->setDefaults($data);
 		});
 	}
 
-	protected function createStep1()
+	protected function createStep1(): Form
 	{
 		$form = $this->createForm();
+		$form->allowCrossOrigin();
 
 		$form->addText('name', 'Name')
 			->setRequired();
@@ -50,9 +54,10 @@ class Wizard extends \Contributte\FormWizard\Wizard
 		return $form;
 	}
 
-	protected function createStep2()
+	protected function createStep2(): Form
 	{
 		$form = $this->createForm();
+		$form->allowCrossOrigin();
 
 		$form->addText('optional', 'Optional');
 
@@ -62,9 +67,10 @@ class Wizard extends \Contributte\FormWizard\Wizard
 		return $form;
 	}
 
-	protected function createStep3()
+	protected function createStep3(): Form
 	{
 		$form = $this->createForm();
+		$form->allowCrossOrigin();
 
 		$form->addText('email', 'Email')
 			->setRequired();

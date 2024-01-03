@@ -1,9 +1,11 @@
-<?php
+<?php declare(strict_types = 1);
+
+namespace Tests\Fixtures;
 
 use Latte\Engine;
 use Nette\Bridges\ApplicationLatte\LatteFactory;
 
-class MockLatteFactory implements LatteFactory
+class DummyLatteFactory implements LatteFactory
 {
 
 	public function create(): Engine
@@ -12,4 +14,3 @@ class MockLatteFactory implements LatteFactory
 	}
 
 }
-
