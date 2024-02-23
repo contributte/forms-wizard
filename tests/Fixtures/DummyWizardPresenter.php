@@ -3,8 +3,6 @@
 namespace Tests\Fixtures;
 
 use Contributte\FormWizard\Latte\WizardExtension;
-use Contributte\FormWizard\Latte\WizardMacros;
-use Latte\Engine;
 use Nette\Application\UI\Presenter;
 use Nette\Application\UI\Template;
 use Nette\Http\Session;
@@ -33,15 +31,10 @@ class DummyWizardPresenter extends Presenter
 		return 'link';
 	}
 
-	protected function createTemplate(): Template
+	protected function createTemplate(?string $class = null): Template
 	{
-		$template = parent::createTemplate();
-
-		if (version_compare(Engine::VERSION, '3', '<')) { // @phpstan-ignore-line
-			WizardMacros::install($template->getLatte());
-		} else {
-			$template->getLatte()->addExtension(new WizardExtension());
-		}
+		$template = parent::createTemplate($class);
+		$template->getLatte()->addExtension(new WizardExtension());
 
 		return $template;
 	}

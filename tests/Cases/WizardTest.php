@@ -8,7 +8,6 @@ use Nette\Application\Request as AppRequest;
 use Nette\Application\Responses\TextResponse;
 use Nette\Application\UI\Form;
 use Nette\Bridges\ApplicationLatte\TemplateFactory;
-use Nette\DI\Container;
 use Nette\Forms\Form as NetteForms;
 use Nette\Http\Request as HttpRequest;
 use Nette\Http\Response as HttpResponse;
@@ -367,7 +366,7 @@ class WizardTest extends TestCase
 			/** @var DummyWizard $wizard */
 			$wizard = $presenter->getComponent('wizard');
 
-			$defaultValues = $wizard->create()->getValues(true);
+			$defaultValues = $wizard->create()->getValues('array');
 			Assert::same([
 				'name' => 'This is default name',
 				'skip' => false,
@@ -412,11 +411,10 @@ class WizardTest extends TestCase
 
 		$presenter = new DummyWizardPresenter();
 		$presenter->injectPrimary(
-			Mockery::mock(Container::class),
-			Mockery::mock(IPresenterFactory::class),
-			Mockery::mock(Router::class),
 			$httpRequest,
 			$httpResponse,
+			Mockery::mock(IPresenterFactory::class),
+			Mockery::mock(Router::class),
 			null,
 			null,
 			$templateFactory
