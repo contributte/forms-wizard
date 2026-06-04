@@ -18,7 +18,16 @@
 Website 🚀 <a href="https://contributte.org">contributte.org</a> | Contact 👨🏻‍💻 <a href="https://f3l1x.io">f3l1x.io</a> | Twitter 🐦 <a href="https://twitter.com/contributte">@contributte</a>
 </p>
 
-## Usage
+Multi-step form wizard for Nette applications. Build form flows with separate steps, navigation, default values, and conditional skipping.
+
+## Versions
+
+| State  | Version | Branch   | PHP     |
+|--------|---------|----------|---------|
+| dev    | `^4.1`  | `master` | `>=8.1` |
+| stable | `^4.0`  | `master` | `>=8.1` |
+
+## Installation
 
 To install latest version of `contributte/forms-wizard` use [Composer](https://getcomposer.org).
 
@@ -26,17 +35,146 @@ To install latest version of `contributte/forms-wizard` use [Composer](https://g
 composer require contributte/forms-wizard
 ```
 
-## Documentation
+## Usage
 
-For details on how to use this package, check out our [documentation](.docs).
+### Register Extension
 
+```neon
+extensions:
+	- Contributte\FormWizard\DI\WizardExtension
+```
 
-## Versions
+### Component
 
-| State       | Version | Branch   | PHP    |
-|-------------|--------|----------|---------|
-| dev         | `^4.1` | `master` | `>=8.1` |
-| stable      | `^4.0` | `master` | `>=8.1` |
+```php
+use Contributte\FormWizard\Wizard as BaseWizard;
+use Nette\Application\UI\Form;
+
+class Wizard extends BaseWizard
+{
+	private array $stepNames = [
+		1 => 'Skip username',
+		2 => 'Username',
+		3 => 'Email',
+	];
+
+	protected function finish(): void
+	{
+		$values = $this->getValues();
+	}
+
+	protected function startup(): void
+	{
+		$this->skipStepIf(2, function (array $values): bool {
+			return isset($values[1]) && $values[1]['skip'] === true;
+		});
+
+		$this->setDefaultValues(2, function (Form $form, array $values): void {
+			$form->setDefaults([
+				'username' => 'john_doe',
+			]);
+		});
+	}
+
+	public function getStepData(int $step): array
+	{
+		return [
+			'name' => $this->stepNames[$step],
+		];
+	}
+
+	protected function createStep1(): Form
+	{
+		$form = $this->createForm();
+
+		$form->addCheckbox('skip', 'Skip username');
+		$form->addSubmit(self::NEXT_SUBMIT_NAME, 'Next');
+
+		return $form;
+	}
+
+	protected function createStep2(): Form
+	{
+		$form = $this->createForm();
+
+		$form->addText('username', 'Username')
+			->setRequired();
+
+		$form->addSubmit(self::PREV_SUBMIT_NAME, 'Back');
+		$form->addSubmit(self::NEXT_SUBMIT_NAME, 'Next');
+
+		return $form;
+	}
+
+	protected function createStep3(): Form
+	{
+		$form = $this->createForm();
+
+		$form->addText('email', 'Email')
+			->setRequired();
+
+		$form->addSubmit(self::PREV_SUBMIT_NAME, 'Back');
+		$form->addSubmit(self::FINISH_SUBMIT_NAME, 'Register');
+
+		return $form;
+	}
+}
+```
+
+```neon
+services:
+	- Wizard
+```
+
+### Presenter
+
+```php
+final class HomepagePresenter extends Nette\Application\UI\Presenter
+{
+	/** @var Wizard @inject */
+	public $wizard;
+
+	public function handleChangeStep(int $step): void
+	{
+		$this['wizard']->setStep($step);
+
+		$this->redirect('wizard'); // Optional, hides parameter from URL.
+	}
+
+	protected function createComponentWizard(): Wizard
+	{
+		return $this->wizard;
+	}
+}
+```
+
+### Template
+
+```latte
+<div n:wizard="wizard">
+	<ul n:if="!$wizard->isSuccess()">
+		<li n:foreach="$wizard->steps as $step" n:class="$wizard->isDisabled($step) ? disabled, $wizard->isActive($step) ? active">
+			<a n:tag-if="$wizard->useLink($step)" n:href="changeStep! $step">{$step} - {$wizard->getStepData($step)['name']}</a>
+		</li>
+	</ul>
+
+	{step 1}
+		{control $form}
+	{/step}
+
+	{step 2}
+		{control $form}
+	{/step}
+
+	{step 3}
+		{control $form}
+	{/step}
+
+	{step success}
+		Registration was successful
+	{/step}
+</div>
+```
 
 ## Development
 
