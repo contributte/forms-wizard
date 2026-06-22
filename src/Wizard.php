@@ -256,10 +256,10 @@ class Wizard extends Component implements IWizard
 		return parent::addComponent($component, $name, $insertBefore);
 	}
 
-	public function getPresenter(): ?Presenter
+	public function getPresenter(bool $throw = true): ?Presenter
 	{
 		if ($this->presenter === null) {
-			$this->presenter = parent::getPresenter();
+			$this->presenter = parent::getPresenter($throw);
 		}
 
 		return $this->presenter;
