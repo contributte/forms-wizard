@@ -320,7 +320,7 @@ class Wizard extends Component implements IWizard
 
 	protected function extractStepFromName(?string $name): ?int
 	{
-		if ($name === null || preg_match('#^step(\d+)$#', $name, $matches) === false) {
+		if ($name === null || preg_match('#^step(\d+)$#', $name, $matches) !== 1) {
 			return null;
 		}
 
@@ -364,8 +364,11 @@ class Wizard extends Component implements IWizard
 
 	private function applyCallbacksToButtons(Form $form): void
 	{
-		/** @var SubmitButton $control */
-		foreach ($form->getComponents(false, SubmitButton::class) as $control) {
+		foreach ($form->getComponents() as $control) {
+			if (!$control instanceof SubmitButton) {
+				continue;
+			}
+
 			if (!in_array($control->getName(), [self::FINISH_SUBMIT_NAME, self::NEXT_SUBMIT_NAME, self::PREV_SUBMIT_NAME], true)) {
 				continue;
 			}
